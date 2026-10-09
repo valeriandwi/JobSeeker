@@ -53,6 +53,22 @@ Docker Compose is the deployment path (`make compose-up`); it publishes
 PostgreSQL on host port 5433 so it does not collide with an existing local
 instance.
 
+### One origin, always
+
+The SPA calls the API on **its own origin** (`/api/v1/...`). `pnpm dev` proxies
+`/api`, `/healthz` and `/readyz` to the backend, and in production Caddy does the
+same. Keep it that way: a session cookie is sent only to the site that set it, so
+if the page is on `localhost:5173` and the API is on `127.0.0.1:8080`, the browser
+stores the login cookie and then never sends it — which looks exactly like "login
+does nothing, it just bounces back to the login form".
+
+- Recommended: leave `VITE_API_BASE_URL` **unset** and browse one host
+  (http://localhost:5173).
+- If you must point at an absolute API URL, it has to be the **same site** as the
+  page: `localhost:5173` → `http://localhost:8080` works; → `http://127.0.0.1:8080`
+  does not.
+- Backend override for the dev proxy: `VITE_API_PROXY_TARGET` in `web/.env`.
+
 ## Verifying it works
 
 ```bash
@@ -142,6 +158,19 @@ Arbeitnow asks for a link back, and Adzuna requires a labelled, linked logo. See
 ## Status
 
 Implemented and verified: everything above.
+
+### Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| Signed in, but every reload lands on `/login` | Fixed in code (session state is now read straight from the `me` query instead of being mirrored into component state, which left a render window where "loading finished" and "user is null" were both true). If you see it again, check you are on one origin — see "One origin, always". |
+| Login appears to succeed, then bounces back | The cookie is being stored for one host and requested from another (`localhost` vs `127.0.0.1` are different sites). Keep the page and the API on the same site. |
+| `401` from `/api/v1/...` in a browser tab | Expected: user-scoped endpoints need the session cookie, and a bare tab has none. Log in through the SPA, or use `curl -c jar …/auth/login` then `curl -b jar …/me`. |
+| `address already in use` on 8080/5173 | Something already runs there: `lsof -nP -iTCP:8080 -sTCP:LISTEN`. |
+| Job list empty | No run has completed for your account, or all sources are disabled — check Search History for the run status. |
+| Few results, `high_match_count: 0` | The default 70/100 threshold is strict, and job titles must resemble your configured target titles. Adjust `job_titles` and the minimum score in Search Config. |
+| ATS sources report `skipped` | `greenhouse`, `lever` and `ashby` need company board slugs in the watchlist. |
+| `go: downloading go1.26.0` | A module was fetched without the toolchain pin: `export GOTOOLCHAIN=local`. |
 
 Deliberately **not** implemented: automatic applications, employer contact, and
 scraping of any source whose terms prohibit it. Email digests (Phase 2 of the

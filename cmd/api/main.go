@@ -56,7 +56,6 @@ func main() {
 	go func() {
 		logger.Info("api listening",
 			"addr", cfg.HTTPAddr,
-			"env", cfg.Env,
 			"database", cfg.RedactedDatabaseURL(),
 			"sources", application.Registry.Len())
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

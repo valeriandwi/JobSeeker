@@ -1,7 +1,17 @@
 import type { ErrorBody, ErrorCode, FieldError } from './types'
 
+/**
+ * Base URL for API calls.
+ *
+ * Empty (the default) means "same origin": the SPA calls /api/v1/... on its own
+ * origin and the dev server (or Caddy in production) proxies it to the backend.
+ * That keeps the session cookie first-party, which is what SameSite=Lax
+ * requires. Only set an absolute URL when the API genuinely lives on another
+ * origin — and then it must be the same *site*, or the browser will store the
+ * login cookie and never send it back.
+ */
 export const API_BASE_URL: string =
-  (import.meta.env?.VITE_API_BASE_URL as string | undefined) ?? 'http://127.0.0.1:8080'
+  ((import.meta.env?.VITE_API_BASE_URL as string | undefined) ?? '').trim()
 
 const FALLBACK_MESSAGES: Record<ErrorCode, string> = {
   validation_error: 'Please correct the highlighted fields.',
@@ -76,7 +86,9 @@ export interface RequestOptions {
 
 function buildUrl(path: string, query?: RequestOptions['query']): string {
   const base = API_BASE_URL.replace(/\/+$/, '')
-  const url = new URL(base + path)
+  // The second argument makes relative bases resolve against the current origin;
+  // an absolute base ignores it.
+  const url = new URL(base + path, window.location.origin)
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null || value === '') continue
