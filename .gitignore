@@ -1,0 +1,28 @@
+# --- secrets / environment ---
+.env
+.env.local
+
+# --- local dev database cluster (isolated, created by `make dev-db-init`) ---
+.devdb/
+
+# --- build artifacts ---
+bin/
+dist/
+*.test
+coverage.out
+
+# --- runtime data (uploaded CVs, logs) ---
+data/
+*.log
+
+# --- frontend ---
+web/node_modules/
+web/dist/
+web/.vite/
+web/playwright-report/
+web/test-results/
+
+# --- editors / OS ---
+.DS_Store
+.idea/
+.vscode/

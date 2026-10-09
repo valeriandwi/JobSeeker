@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1
+# Frontend image: build the SPA, then serve the static bundle with Caddy.
+# VITE_API_BASE_URL is baked in at build time, so it must be the URL the
+# browser will use (not an internal compose hostname).
+
+FROM node:20-alpine AS build
+WORKDIR /web
+RUN corepack enable
+
+COPY web/package.json web/pnpm-lock.yaml* web/pnpm-workspace.yaml* ./
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile || pnpm install
+
+COPY web/ ./
+ARG VITE_API_BASE_URL=http://localhost:8080
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN pnpm build
+
+FROM caddy:2-alpine
+COPY deploy/Caddyfile /etc/caddy/Caddyfile
+COPY --from=build /web/dist /srv
+EXPOSE 80 443

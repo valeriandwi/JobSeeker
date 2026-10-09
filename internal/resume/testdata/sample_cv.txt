@@ -1,0 +1,42 @@
+VALERIAN DWIPURNOMO
+Senior Full Stack Engineer
+valerian@example.com | +62 812 3456 7890 | linkedin.com/in/valeriandwipurnomo | Jakarta, Indonesia
+
+SUMMARY
+Senior full stack engineer with 8 years of production experience building web platforms.
+Specialises in React, TypeScript and Go services, with strong PostgreSQL and observability skills.
+
+WORK EXPERIENCE
+Senior Full Stack Engineer | Nusantara Fintech | Jan 2021 - Present
+- Led the migration of a payments dashboard to React and TypeScript, cutting page load time by 40%.
+- Designed Go microservices with gRPC and PostgreSQL handling 2M daily transactions.
+- Introduced OpenTelemetry tracing, Prometheus metrics and Grafana dashboards.
+- Mentored four engineers and ran the code review process.
+
+Full Stack Developer | Jakarta Retail Group | Mar 2018 - Dec 2020
+- Built an e-commerce platform with Next.js, Node.js and PostgreSQL.
+- Implemented CI/CD with Docker, GitHub Actions and AWS ECS.
+- Integrated Midtrans and Xendit payment gateways.
+
+Backend Developer | Surabaya Software House | Jul 2016 - Feb 2018
+- Developed REST APIs in Go and Python (Django) for logistics clients.
+- Optimised MySQL queries and introduced Redis caching.
+
+EDUCATION
+Bachelor of Computer Science, Institut Teknologi Bandung, 2016
+
+CERTIFICATIONS
+AWS Certified Solutions Architect - Associate, 2022
+Certified Scrum Master, 2021
+
+TECHNICAL SKILLS
+React, TypeScript, JavaScript, Go, Node.js, PostgreSQL, Redis, Docker, Kubernetes, AWS,
+Terraform, gRPC, GraphQL, Kafka, Prometheus, Grafana, OpenTelemetry, Jest, Playwright,
+CI/CD, Microservices, Clean Architecture, System Design
+
+PROJECTS
+Job aggregation service - Go service polling multiple job boards with duplicate detection.
+Internal design system - reusable React component library adopted by six product teams.
+
+LANGUAGES
+Indonesian (native), English (professional), Mandarin (basic)

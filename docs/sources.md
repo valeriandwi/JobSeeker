@@ -1,0 +1,73 @@
+# Job source feasibility and obligations
+
+This document records **what was verified against the live services**, what each
+source permits, and what the product owes in return. Everything in the first
+three tables was probed directly (HTTP status + payload inspected) rather than
+taken from marketing pages or blog posts.
+
+Verified on a development machine on the date the project was set up. Endpoints
+and terms change: re-probe before relying on any row.
+
+## 1. Available, keyless — shipped in this build
+
+| Source | Endpoint | Observed | Fields actually published | Obligations |
+|---|---|---|---|---|
+| **Arbeitnow** | `GET https://www.arbeitnow.com/api/job-board-api?page=N` | 200, 325 jobs/page, paginated, hourly refresh | title, company_name, description, tags, location, remote, job_types, created_at, url | `meta.terms`: free public API, "please do not abuse", link back appreciated |
+| **Remotive** | `GET https://remotive.com/api/remote-jobs?limit=N` | 200 | title, company, category, job_type, salary, candidate_required_location, publication_date, tags, url | `0-legal-notice`: attribution + link back; **must not be redistributed to third-party job boards**; data delayed 24h |
+| **Remote OK** | `GET https://remoteok.com/api` | 200, 100-job window, element 0 carries the licence | position, company, tags, location, salary_min/max, url, date, apply_url | **dofollow backlink required** — the API suspends access otherwise. Rendered as a normal follow link in the UI (`backlink_required = true`) |
+| **Jobicy** | `GET https://jobicy.com/api/v2/remote-jobs?count=N` | 200 | jobTitle, companyName, jobGeo, jobIndustry, jobLevel, jobType, salaryMin/Max/Currency/Period, pubDate, url | free collaborative remote feed |
+| **Himalayas** | `GET https://himalayas.app/jobs/api?limit=N` | 200 | title, company, seniority, employmentType, expiryDate, locationRestrictions, min/maxSalary, currency, applicationLink, pubDate | free public feed |
+| **Greenhouse** (company boards) | `GET https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true` | 200 | title, location, offices, content, absolute_url, first_published, updated_at, application_deadline | public board API; requires a per-user company watchlist |
+| **Lever** (company boards) | `GET https://api.lever.co/v0/postings/{slug}?mode=json` | 200 on live boards | text, hostedUrl, applyUrl, categories.{location,team,commitment}, descriptionPlain, createdAt | public board API; requires a watchlist |
+| **Ashby** (company boards) | `GET https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true` | 200 | title, location, department, employmentType, isRemote, **workplaceType**, compensation, publishedAt, jobUrl | public board API; requires a watchlist |
+
+ATS boards return `skipped` (not an error) when the user has configured no
+watchlist — the run report says exactly that.
+
+## 2. Available with an operator-supplied key — catalogued, no adapter yet
+
+| Source | Reality | Terms / limits |
+|---|---|---|
+| **Adzuna** | Requires `app_id` + `app_key` | Default limits 25/min, 250/day, 1,000/week, 2,500/month; each displayed advert must carry the label "Adzuna" at least **116×23 px, hyperlinked** to the local domain; publishing beyond the free tier may need a licence |
+| **USAJOBS** | Requires an API key and a contact email in `User-Agent` | US federal roles only; documented limits: max 10,000 rows/query, 500 rows/page |
+| **Jooble** | Partner REST API, **one key per country domain**, obtained by registering on `jooble.org/api/about` | Onboarding step required; not a self-serve feed |
+
+These rows are seeded with `enabled_globally = false` (migration `0002`) and are
+reported in the UI as unavailable in this build rather than being silently
+"searched" and failing on every run.
+
+## 3. Not available through any permissible automated channel
+
+| Source | Evidence |
+|---|---|
+| **Indeed** | Publisher API dead: sign-ups closed 2020, endpoints returned 410 by 2024; `id.indeed.com/robots.txt` disallows `/job/`, `/api/getrecjobs`, `/advanced_search`. What remains is employer/ATS-side only |
+| **Glassdoor** | `api.glassdoor.com/api/api.htm` returns **410 Gone**; the public API was retired with no self-serve replacement |
+| **LinkedIn Jobs** | Microsoft Learn: "We are currently not accepting new partnerships" for the Job Posting API. Jobs T&C: "Except as expressly authorized by LinkedIn in writing, use any automated means or form of scraping or data extraction to access, modify, download, query or otherwise collect information from LinkedIn." `robots.txt` disallows `/jobs?runSearch*`, `/api/jobPostings/jobs*`, `/jsearch*` |
+| **JobStreet / SEEK** | `developer.seek.com` is an integration surface for recruitment software and hirers (posting/managing ads, ATS sync) — not a seeker-side listing feed, and it needs partner onboarding. `jobstreet.co.id/robots.txt` disallows `/job/` and `/api/jobsearch/` |
+| **Google Jobs** | No public API. Only paid aggregators; vendor pricing must be confirmed before committing to cost |
+| **Glints / Kalibrr** | No public API. `glints.com/robots.txt` disallows `/opportunities/jobs/explore?*`, `/recommended`, `/bookmarked` |
+
+## 4. What this means for the product
+
+- A "search LinkedIn + Indeed + JobStreet + Glassdoor" product is **not buildable
+  legally today**. This application deliberately does not attempt it.
+- Coverage comes from permitted feeds plus an **ATS company watchlist**, which is
+  where the most complete structured data actually lives (compensation,
+  workplace type, deadlines).
+- Attribution is a product feature, not an afterthought: obligations are stored
+  per source in `job_sources` and returned with every listing so a badge cannot
+  be forgotten when the UI changes.
+- Original URLs are always preserved and shown; the canonical URL hash used for
+  deduplication never replaces the link the user clicks.
+
+## 5. Adding a source
+
+1. Verify access: HTTP status, payload shape, terms, robots, rate limits.
+2. Add a row to `job_sources` (migration) including attribution text/URL and
+   whether a backlink is required.
+3. Implement `sources.Adapter` in `internal/sources/<name>.go` — map fields, set
+   `AttributesVerified` **only** for values the payload actually contained, and
+   never invent salary, arrangement or employment type.
+4. Capture a real fixture into `internal/sources/testdata/<name>.json` and add
+   table-driven tests.
+5. Register the adapter in `internal/app.buildRegistry` and set a rate limit.

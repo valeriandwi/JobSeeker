@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1
+# Backend image: static Go binary on a minimal runtime, built with the module
+# cache mounted so rebuilds are fast and reproducible.
+
+FROM golang:1.25-bookworm AS build
+WORKDIR /src
+
+# Dependencies first: this layer only changes when go.mod/go.sum change.
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+
+COPY . .
+# GOTOOLCHAIN=local prevents an implicit toolchain download during the build.
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOTOOLCHAIN=local CGO_ENABLED=0 go build \
+      -trimpath -ldflags="-s -w" -o /out/api ./cmd/api && \
+    GOTOOLCHAIN=local CGO_ENABLED=0 go build \
+      -trimpath -ldflags="-s -w" -o /out/scheduler ./cmd/scheduler && \
+    GOTOOLCHAIN=local CGO_ENABLED=0 go build \
+      -trimpath -ldflags="-s -w" -o /out/migrate ./cmd/migrate
+
+FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /app
+COPY --from=build /out/api /out/scheduler /out/migrate /app/
+# Uploaded CVs live here; mount a volume and keep it out of the image.
+VOLUME ["/app/data"]
+USER nonroot:nonroot
+EXPOSE 8080
+ENTRYPOINT ["/app/api"]

@@ -1,0 +1,266 @@
+import { useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { jobsApi } from '../api'
+import type { Job, JobFilters } from '../api/types'
+import { errorMessage } from '../api/client'
+import { Table } from '../components/ui/Table'
+import { Badge } from '../components/ui/Badge'
+import { Button } from '../components/ui/Button'
+import { Input, Select } from '../components/ui/Input'
+import { ScoreBadge } from '../components/ScoreBadge'
+import { UnknownChip } from '../components/UnknownChip'
+import { EmptyState, ErrorState, LoadingState } from '../components/ui/States'
+import { formatSalary, relativeTime } from '../lib/format'
+import {
+  ARRANGEMENT_OPTIONS,
+  EMPLOYMENT_TYPE_OPTIONS,
+  JOB_STATUS_OPTIONS,
+  SORT_OPTIONS,
+  filtersToParams,
+  parseFilters,
+} from '../lib/filters'
+
+const SORT_LABELS = new Set(SORT_OPTIONS.map((o) => o.value))
+
+/** All Unknown-marker-aware attributes on a job row. */
+export function JobRow({ job }: { job: Job }) {
+  const salary = formatSalary(job)
+  const primarySource = job.sources[0]
+  return (
+    <tr>
+      <td className="px-3 py-3 align-top">
+        <ScoreBadge score={job.match_score} />
+      </td>
+      <td className="px-3 py-3 align-top">
+        <div className="font-medium text-slate-900">{job.title || <UnknownChip value={null} fallback="Untitled" />}</div>
+        <div className="text-sm text-slate-600">
+          <UnknownChip value={job.company} />
+        </div>
+      </td>
+      <td className="px-3 py-3 align-top text-sm text-slate-600">
+        {job.location_city || job.location_country ? (
+          <span>{[job.location_city, job.location_country].filter(Boolean).join(', ')}</span>
+        ) : (
+          <UnknownChip value={null} />
+        )}
+      </td>
+      <td className="px-3 py-3 align-top text-sm">
+        <UnknownChip value={job.employment_type} />
+      </td>
+      <td className="px-3 py-3 align-top text-sm">
+        <UnknownChip value={job.work_arrangement} />
+      </td>
+      <td className="px-3 py-3 align-top text-sm">
+        {salary ? <span>{salary}</span> : <Badge tone="neutral">Not disclosed</Badge>}
+      </td>
+      <td className="px-3 py-3 align-top text-sm">
+        {primarySource ? (
+          <div className="space-y-1">
+            <a
+              href={primarySource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-600 hover:underline"
+            >
+              {primarySource.display_name}
+            </a>
+            {primarySource.backlink_required && (
+              <p className="text-xs text-amber-700">
+                Attribution required
+                {primarySource.attribution_url && (
+                  <>
+                    {' · '}
+                    <a
+                      href={primarySource.attribution_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      source
+                    </a>
+                  </>
+                )}
+              </p>
+            )}
+          </div>
+        ) : (
+          <UnknownChip value={null} fallback="No source" />
+        )}
+      </td>
+      <td className="px-3 py-3 align-top text-sm text-slate-600">
+        {job.first_discovered_at ? relativeTime(job.first_discovered_at) : <UnknownChip value={null} />}
+      </td>
+      <td className="px-3 py-3 align-top text-sm">
+        {primarySource?.apply_url || primarySource?.url ? (
+          <a
+            href={primarySource.apply_url ?? primarySource.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-600 hover:underline"
+          >
+            Open original ↗
+          </a>
+        ) : (
+          <UnknownChip value={null} fallback="No link" />
+        )}
+      </td>
+    </tr>
+  )
+}
+
+export function JobsFilterForm({
+  filters,
+  onChange,
+}: {
+  filters: JobFilters
+  onChange: (next: JobFilters) => void
+}) {
+  const set = (key: keyof JobFilters, value: string) => {
+    const next = { ...filters, page: '1' }
+    if (value) next[key] = value
+    else delete next[key]
+    onChange(next)
+  }
+
+  return (
+    <form
+      aria-label="Job filters"
+      className="grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4"
+      onSubmit={(e) => e.preventDefault()}
+    >
+      <Input label="Search" value={filters.q ?? ''} onChange={(e) => set('q', e.target.value)} placeholder="Title, company…" />
+      <Input label="Country" value={filters.country ?? ''} onChange={(e) => set('country', e.target.value)} />
+      <Input label="City" value={filters.city ?? ''} onChange={(e) => set('city', e.target.value)} />
+      <Select label="Work arrangement" value={filters.arrangement ?? ''} onChange={(e) => set('arrangement', e.target.value)}>
+        <option value="">Any</option>
+        {ARRANGEMENT_OPTIONS.map((v) => (
+          <option key={v} value={v}>
+            {v}
+          </option>
+        ))}
+      </Select>
+      <Select
+        label="Employment type"
+        value={filters.employment_type ?? ''}
+        onChange={(e) => set('employment_type', e.target.value)}
+      >
+        <option value="">Any</option>
+        {EMPLOYMENT_TYPE_OPTIONS.map((v) => (
+          <option key={v} value={v}>
+            {v}
+          </option>
+        ))}
+      </Select>
+      <Input label="Seniority" value={filters.seniority ?? ''} onChange={(e) => set('seniority', e.target.value)} />
+      <Input label="Source" value={filters.source ?? ''} onChange={(e) => set('source', e.target.value)} />
+      <Input
+        label="Minimum match score"
+        type="number"
+        min={0}
+        max={100}
+        value={filters.min_score ?? ''}
+        onChange={(e) => set('min_score', e.target.value)}
+      />
+      <Select label="Status" value={filters.status ?? ''} onChange={(e) => set('status', e.target.value)}>
+        <option value="">Any</option>
+        {JOB_STATUS_OPTIONS.map((v) => (
+          <option key={v} value={v}>
+            {v}
+          </option>
+        ))}
+      </Select>
+      <Select
+        label="Sort by"
+        value={SORT_LABELS.has(filters.sort ?? '') ? (filters.sort as string) : 'score'}
+        onChange={(e) => set('sort', e.target.value)}
+      >
+        {SORT_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </Select>
+      <div className="flex items-end">
+        <Button type="button" variant="secondary" onClick={() => onChange({ sort: 'score' })}>
+          Reset filters
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+export function JobDiscoveryPage() {
+  const [params, setParams] = useSearchParams()
+  const filters = useMemo(() => parseFilters(params), [params])
+
+  const query = useQuery({
+    queryKey: ['jobs', filters],
+    queryFn: () => jobsApi.list(filters),
+    placeholderData: keepPreviousData,
+  })
+
+  const onFilterChange = (next: JobFilters) => {
+    setParams(filtersToParams(next), { replace: false })
+  }
+
+  const page = Number(filters.page ?? '1')
+  const perPage = Number(filters.per_page ?? '20')
+  const total = query.data?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / perPage))
+
+  const setPage = (p: number) => {
+    setParams(filtersToParams({ ...filters, page: String(p) }))
+  }
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Job Discovery</h1>
+      <JobsFilterForm filters={filters} onChange={onFilterChange} />
+
+      {query.isLoading ? (
+        <LoadingState label="Loading jobs…" />
+      ) : query.isError ? (
+        <ErrorState message={errorMessage(query.error)} onRetry={() => query.refetch()} />
+      ) : !query.data || query.data.jobs.length === 0 ? (
+        <EmptyState title="No jobs match these filters" description="Try widening your search criteria." />
+      ) : (
+        <>
+          <div className="rounded-lg border border-slate-200 bg-white">
+            <Table
+              caption="Job search results"
+              head={[
+                'Score',
+                'Title / Company',
+                'Location',
+                'Type',
+                'Arrangement',
+                'Salary',
+                'Source',
+                'First discovered',
+                'Link',
+              ]}
+            >
+              {query.data.jobs.map((job) => (
+                <JobRow key={job.id} job={job} />
+              ))}
+            </Table>
+          </div>
+          <nav aria-label="Pagination" className="flex items-center justify-between text-sm">
+            <span className="text-slate-500">
+              Page {page} of {totalPages} · {total} results
+            </span>
+            <div className="flex gap-2">
+              <Button variant="secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                Previous
+              </Button>
+              <Button variant="secondary" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                Next
+              </Button>
+            </div>
+          </nav>
+        </>
+      )}
+    </div>
+  )
+}

@@ -1,0 +1,34 @@
+# Caddy serves the built SPA and reverse-proxies the API on the same origin,
+# which keeps the session cookie first-party (no cross-site cookie problems) and
+# gives TLS for free on a real domain.
+#
+# Replace "localhost" with your domain to get automatic HTTPS.
+
+:80 {
+	encode gzip
+
+	# API and health endpoints.
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+	handle /healthz {
+		reverse_proxy api:8080
+	}
+	handle /readyz {
+		reverse_proxy api:8080
+	}
+
+	# Static SPA with client-side routing fallback.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}

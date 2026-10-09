@@ -1,0 +1,123 @@
+# JobSeeker stack: PostgreSQL, migrations, API, scheduler, web.
+#
+# PostgreSQL is published on host port 5433 to avoid colliding with a local
+# Postgres already listening on 5432. Nothing in this file is destructive: named
+# volumes keep the data across restarts, and `docker compose down -v` is required
+# to remove it.
+#
+# Usage (from the repository root):
+#   cp .env.example .env          # then review it
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#
+# Production notes:
+#   - COOKIE_SECURE must be true behind TLS (the compose default is for local use).
+#   - Put real secrets in .env or a secret manager; never commit them.
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jobseeker
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: jobseeker
+      # Deterministic collation keeps index behaviour identical across hosts.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobseeker -d jobseeker"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Runs to completion before the API starts, so the API never serves a
+  # half-migrated schema.
+  migrate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    entrypoint: ["/app/migrate", "up"]
+    environment:
+      DATABASE_URL: postgres://jobseeker:${POSTGRES_PASSWORD}@postgres:5432/jobseeker?sslmode=disable
+      APP_ENV: ${APP_ENV:-production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      HTTP_ADDR: 0.0.0.0:8080
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgres://jobseeker:${POSTGRES_PASSWORD}@postgres:5432/jobseeker?sslmode=disable
+      DATA_DIR: /app/data
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-js_session}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-720}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
+      SCHEDULER_ENABLED: "false"
+      ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+      ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
+      USAJOBS_API_KEY: ${USAJOBS_API_KEY:-}
+      USAJOBS_USER_AGENT_EMAIL: ${USAJOBS_USER_AGENT_EMAIL:-}
+      JOOBLE_API_KEY: ${JOOBLE_API_KEY:-}
+    volumes:
+      - cvs:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/app/api", "--healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Separate process: a long search must never block request handling, and the
+  # advisory lock makes additional replicas safe.
+  scheduler:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    entrypoint: ["/app/scheduler"]
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgres://jobseeker:${POSTGRES_PASSWORD}@postgres:5432/jobseeker?sslmode=disable
+      SCHEDULER_ENABLED: "true"
+      DEFAULT_SCHEDULE_CRON: ${DEFAULT_SCHEDULE_CRON:-0 8 * * *}
+      DEFAULT_SCHEDULE_TIMEZONE: ${DEFAULT_SCHEDULE_TIMEZONE:-Asia/Jakarta}
+      SOURCE_HTTP_TIMEOUT: ${SOURCE_HTTP_TIMEOUT:-20s}
+      ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+      ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        # Baked into the bundle, so it must be the origin the browser calls.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  cvs:

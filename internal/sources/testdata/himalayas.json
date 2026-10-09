@@ -1,0 +1,156 @@
+{
+ "comments": "21/08/2026: Cursor pagination is now available and is the preferred way to page through the feed. Pass the nextCursor value from each response back as ?cursor=. It is faster than offset and will never return the same job twice. The offset parameter is deprecated and will be removed in a future release. 13/03/2026: The API has been updated to include the companySlug field in the response.",
+ "updatedAt": 1791530185,
+ "offset": 0,
+ "limit": 3,
+ "totalCount": 3,
+ "nextCursor": "MjAyNi0xMC0wOVQwNzoxNDowOS4zODU5MTVafDIzNzczNDE",
+ "jobs": [
+  {
+   "title": "Business Development Manager - Global, Remote (UNCAPPED COMMISSIONS)",
+   "excerpt": "About MagicMagic is a leading modern outsourcing platform that connects SMBs to high-quality remote workers, from SDRs to virtual assistants and more.",
+   "companyName": "Magic",
+   "companySlug": "getmagic",
+   "companyLogo": "https://cdn-images.himalayas.app/chn8ct15t2fodtsolc5pbhf5twm1",
+   "employmentType": "Full Time",
+   "minSalary": 1500,
+   "maxSalary": 2500,
+   "salaryPeriod": "monthly",
+   "seniority": [
+    "Manager"
+   ],
+   "currency": "USD",
+   "locationRestrictions": [
+    "Mexico"
+   ],
+   "timezoneRestrictions": [
+    -8,
+    -7,
+    -6,
+    -5
+   ],
+   "categories": [
+    "Business-Development-Manager",
+    "Account-Executive",
+    "Sales",
+    "B2B-Sales",
+    "SaaS-Sales",
+    "Remote-Business-Development-Manager",
+    "Global-Business-Development-Manager",
+    "SALES-BUSINESS-DEVELOPMENT-MANAGER",
+    "International-Business-Development-Manager"
+   ],
+   "parentCategories": [
+    "Sales"
+   ],
+   "description": "<h3>About <a href=\"https://himalayas.app/companies/getmagic\">Magic</a>\n</h3><div>\n<a href=\"https://himalayas.app/companies/getmagic\">Magic</a> is a leading modern outsourcing platform that connects SMBs to high-quality remote workers, from SDRs to virtual assistants and more. With roots in Silicon Valley, and backing from top venture capitalists, our workers are supercharged with a combination of the latest AI technology and training.</div><div>\n<h3>Role Purpose</h3>\n<div>We are seeking experienced and driven Business Development Managers (Account Executives) who are passionate about helping fast-growing businesses achieve their goals. As a BDM, you will own the end-to-end sales cycle—from initial outreach and discovery to closing and onboarding—while consistently creating value and fostering lasting client relationships.<br><br><strong>We will give you 50+ warm inbound leads per month. Your job? Own them. All the way.<div>From discovery to close, from \"not now\" to \"let's revisit\", your success will come from your grit, discipline, curiosity, and accountability. We're looking for high-performing Account Executives who are obsessed with results, coachable to the core, and treat every lead like gold.</div>\n<h3>Key Areas of Impact and Focus: </h3>\n<div>\n<h3>\n<strong>Core Responsibilities:</strong><ul>\n<li>\n<strong>Own the full sales cycle</strong> from inbound discovery to follow-up, closing, and successful onboarding, ensuring a smooth transition for new clients and hitting quota monthly</li>\n<li>\n<strong>Run 15+ discovery calls per week</strong> with C-level and Director-level prospects; uncover pain, establish urgency, and align the right product</li>\n<li>\n<strong>Know when to position which <a href=\"https://himalayas.app/companies/getmagic\">Magic</a> product</strong> by becoming a true product expert and match offerings to prospect needs with precision</li>\n<li>\n<strong>Treat every lead like a win waiting to happen</strong> by working “not now” leads with discipline and creativity until the timing is right</li>\n<li>\n<strong>Work every deal to completion </strong>and don’t let momentum die; follow up persistently, update next steps, and never lose track of potential</li>\n<li>\n<strong>Own your pipeline like a pro</strong> while keeping HubSpot clean, prioritize outreach, and maintain deal velocity at all times</li>\n<li>\n<strong>Collaborate with Sales, Support, and Ops Teams</strong> to ensure clients start strong and are set up for long-term success</li>\n<li>\n<strong>Share what’s working and learn what’s not</strong> bringing a growth mindset to every deal, and adapt quickly when SOPs, experiments, or strategies evolve</li>\n<li>\n<strong>Continuously learn and improve, </strong>seeking feedback, applying it fast, and treating personal growth like part of the job</li>\n<li>\n<strong>Stay consistent, stay hungry </strong>while showing up with energy, drive, and the mindset that every day is an opportunity to win</li>\n</ul>\n</h3>\n<h3></h3>\n<h3>\n<strong>What Winning Looks Like:</strong><ul>\n<li>You handle 2 to 8 discovery calls per day and never drop the ball</li>\n<li>You don’t let soft “no's” die. You work the deal until the answer is final</li>\n<li>You actively ask, “What could I do better?” and apply the feedback fast</li>\n<li>You own your pipeline like you personally paid for the lead. Every lead, every stage, is tracked and followed up on</li>\n<li>You’re not waiting for opportunities, you’re creating them in your pipeline</li>\n</ul>\n</h3>\n<h3></h3>\n<h3>\n<strong>Who This Role is Not For:</strong><ul>\n<li>You blame the leads, the tools, or the process, rather than asking what you could do better</li>\n<li>You need a manager to tell you what to do every day</li>\n<li>You think leads manage themselves and don’t believe in persistent, proactive follow-up</li>\n<li>You don’t take the initiative to improve; you wait for someone to tell you what to fix</li>\n<li>You treat “bad timing” or “not now” as dead ends instead of future wins to nurture</li>\n</ul>\n</h3>\n</div>\n<h3>Qualified Candidate Requirements: </h3>\n<div>\n<h3><strong>Qualification Requirements</strong></h3>\n<ul>\n<li>\n<strong>Experience Fit:</strong> 2+ years of B2B sales experience (SMB/Mid-Market, U.S. or Canada), with a proven track record selling SaaS, subscription services, AI, or outsourcing to executive-level buyers.</li>\n<li>\n<strong>GTM Fit: </strong>You’ve thrived in high-volume inbound environments and treat every lead with the tenacity and structure of an outbound opportunity (no stone left unturned).</li>\n<li>\n<strong>Sales Style Fit:</strong> You’re a consultative, relationship-first seller who drives urgency, uncovers pain, and positions value across multiple stakeholders.</li>\n<li>\n<strong>Mindset Fit:</strong> Hungry, gritty, coachable, self-accountable, and you take ownership of outcomes and don’t wait to be told what to fix.</li>\n<li>\n<strong>Culture Fit</strong>: You thrive in a fast-changing startup, are mature, proactive, curious, and a driver of team momentum.</li>\n<li>\n<strong>Tech Fluency: </strong>You’re strong with HubSpot, AI tools, and modern sales platforms, using technology to go faster.</li>\n<li><strong>Start Date: You can start on February 9, 2026</strong></li>\n</ul>\n<div>\n<h3><strong>Key Time Zone  Schedule Requirements</strong></h3>\n<ul>\n<li>\n<strong>Work Schedule:</strong> 9-hour shifts following US business hours between 9:00 AM - 8:00 PM Eastern Time</li>\n<li>\n<strong>Training Schedule:</strong> 9:00 AM - 5:00 PM Eastern Time (mandatory attendance)</li>\n<li>\n<strong>Time Zone Alignment:</strong> Must be able to consistently work in Eastern Time, including adjustments for Daylight Saving Time</li>\n<li>\n<strong>Availability:</strong> Monday to Friday, with consistent availability during U.S. business hours</li>\n</ul>\n<div>\n<h3><strong>Equipment Requirements (Self-Provided)</strong></h3>\n<ul>\n<li>Computer/laptop meeting company specifications</li>\n<li>Reliable high-speed internet connection (minimum 50 Mbps download/10 Mbps upload)</li>\n<li>Professional headset for clear client communication</li>\n<li>Quiet, distraction-free work environment</li>\n<li>Backup power/internet solution for uninterrupted client service</li>\n</ul>\n<div>\n<h3><strong>Traits of a Top Performer at <a href=\"https://himalayas.app/companies/getmagic\">Magic</a> Sales Team</strong></h3>\n<ul>\n<li>Hunger: You chase results and hate leaving potential on the table</li>\n<li>Grit: You keep pushing when it gets hard because that’s where wins happen</li>\n<li>Coachability: You treat feedback like fuel</li>\n<li>Maturity: You treat leads like gold and time like your most valuable asset</li>\n<li>Ownership: You drive your own success; you don’t wait for it</li>\n<li>Problem Solver: You look for paths forward, not reasons it won’t work</li>\n</ul>\n<div>\n<h3><strong>Application Process</strong></h3>\n<ol>\n<li>Apply - Application + Video Questions</li>\n<li>HR Interview - 1 on 1 with HR</li>\n<li>2nd Level Interview - 1 on 1 with Sales Leadership<ul><li>We may have a 3rd interview with an additional sales leader</li></ul>\n</li>\n<li>Role Play Exercise - 1 on 1 with Sales Leadership</li>\n<li>Final Interview - Team-Based Interview</li>\n</ol>\n</div>\n<h3>Why Top Sales Performers Choose <a href=\"https://himalayas.app/companies/getmagic\">Magic</a>\n</h3>\n<div>\n<h3>Limitless Earning Potential</h3>\n<ul>\n<li>\n<strong>Guaranteed Base:</strong> $1,500 - $2,500 monthly foundation for stability</li>\n<li>\n<strong>Performance Commission:</strong> 15-25% increasing with performance excellence</li>\n<li>\n<strong>Average Commission Reality:</strong> $1,500 - $2,000 monthly (what most BDMs earn)</li>\n<li>\n<strong>Total Monthly Earnings:</strong> $2,500 - $4,500+ with clear path to increase</li>\n<li>\n<strong>Truly Uncapped Commission:</strong> Our top performers consistently earn $5,000+ monthly</li>\n<li>\n<strong>Accelerated Growth:</strong> Commission percentages increase as you exceed targets</li>\n<li>\n<strong>Rapid Advancement:</strong> Clear path to senior roles with enhanced compensation</li>\n</ul>\n<div class=\"attachment-gallery attachment-gallery--6\">﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿</div>\n</div>\n</div>\n</div>\n</div>\n</div></strong>\n</div>\n</div><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+   "pubDate": 1791530185,
+   "expiryDate": 1796714185,
+   "applicationLink": "https://himalayas.app/companies/getmagic/jobs/business-development-manager-global-remote-uncapped-commissions-6314110135",
+   "guid": "https://himalayas.app/companies/getmagic/jobs/business-development-manager-global-remote-uncapped-commissions-6314110135"
+  },
+  {
+   "title": "Senior Business Analyst - Remote, Latin America",
+   "excerpt": "Bluelight is a leading software consultancy dedicated to designing and developing innovative technology that enhances users' lives.",
+   "companyName": "Bluelight Consulting",
+   "companySlug": "bluelight-consulting",
+   "companyLogo": "https://cdn-images.himalayas.app/mv5u9hj2zi5ez6zg2cnsq2bg8yy4",
+   "employmentType": "Full Time",
+   "minSalary": null,
+   "maxSalary": null,
+   "salaryPeriod": "annual",
+   "seniority": [
+    "Senior"
+   ],
+   "currency": null,
+   "locationRestrictions": [
+    "Mexico"
+   ],
+   "timezoneRestrictions": [
+    -8,
+    -7,
+    -6,
+    -5
+   ],
+   "categories": [
+    "Business-Analyst",
+    "Senior-Business-Analyst",
+    "Product-Analyst",
+    "Operations-Analyst",
+    "Technical-Business-Analyst",
+    "Remote-Senior-Business-Analyst"
+   ],
+   "parentCategories": [
+    "Data Science",
+    "Product",
+    "Operations"
+   ],
+   "description": "<div>Bluelight is a leading software consultancy dedicated to designing and developing innovative technology that enhances users' lives. With a steadfast commitment to delivering exceptional service to our clients, Bluelight excels in its focus on quality and customer satisfaction. Our mission is not only to create cutting-edge applications but also to foster a collaborative and enriching work environment where each team member can grow and thrive. With a presence across the United States and Central/South America, Bluelight is in an exciting phase of expansion, continually seeking exceptional talent to join its dynamic and diverse community.</div><div>We're looking for a Business Analyst to turn business problems into clear, buildable requirements. You'll sit between our clients, our product team, and our engineers: running discovery, mapping processes, writing user stories and acceptance criteria, and making sure what we ship actually solves the problem it was meant to solve.</div><div>You'll work across a mix of client builds, client maintenance engagements, and Bluelight's internal products, and you'll play a key role when new projects are being scoped and estimated.</div><h3>Responsibilities</h3><ul>\n<li>Lead stakeholder interviews and workshops with clients and internal teams to understand goals, current workflows, and pain points.</li>\n<li>Document current-state and future-state processes, business rules, data definitions, and edge cases.</li>\n<li>Support new-project sizing by breaking scope into epics and stories that engineering can estimate with confidence.</li>\n<li>Identify assumptions, risks, dependencies, and open questions early, and drive them to resolution.</li>\n<li>Write clear user stories with testable acceptance criteria in Jira.</li>\n<li>Partner with the Product Manager to prioritize and groom the backlog ahead of each two-week sprint.</li>\n<li>Work with UI/UX design in Figma to make sure flows and screens match the requirements, and flag gaps before development starts.</li>\n<li>Answer engineering questions during the sprint and keep requirements current as decisions are made.</li>\n<li>Work with QA to make sure acceptance criteria translate into solid test coverage.</li>\n<li>Support sprint demos and coordinate user acceptance testing with clients.</li>\n<li>Keep requirements documentation organized in Google Drive so decisions and their rationale are easy to find later.</li>\n<li>Make sure compliance, security, and audit requirements (including SOC 2 considerations) are captured as explicit requirements, not afterthoughts.</li>\n<li>Act as a trusted point of contact for clients on scope and requirements questions.</li>\n<li>Translate between business and technical audiences clearly and without jargon in either direction.</li>\n<li>Surface scope changes early and help the team and client understand the tradeoffs.</li>\n</ul><h3>Requirements</h3><ul>\n<li>3+ years as a Business Analyst, Product Analyst, or similar role on software projects.</li>\n<li>Strong experience writing user stories and acceptance criteria in an agile/Scrum environment.</li>\n<li>Proven ability to run discovery sessions and turn ambiguous input into structured requirements.</li>\n<li>Comfort with process mapping and data modeling at a business level (flows, entities, relationships, rules).</li>\n<li>Hands-on experience with Jira; familiarity with Figma and collaborative docs.</li>\n<li>Excellent written and spoken English; comfortable leading client meetings with U.S. stakeholders.</li>\n<li>Enough technical literacy to have productive conversations with engineers about APIs, integrations, databases, and system constraints.</li>\n</ul><h3>Nice to Have</h3><ul>\n<li>Experience in an agency, consultancy, or software services environment juggling multiple clients.</li>\n<li>Exposure to regulated or compliance-heavy domains (e.g., SOC 2, telecom/outbound compliance, education, fintech).</li>\n<li>Experience writing requirements for integrations with third-party platforms.</li>\n<li>Familiarity with web application stacks (e.g., Laravel, React) and AWS.</li>\n<li>Experience supporting estimation or proposal work for new projects.</li>\n</ul><h3>Company Benefits</h3><ul>\n<li>Competitive salary and bonuses, including performance-based salary increases.</li>\n<li>Generous paid-time-off policy</li>\n<li>Flexible working hours</li>\n<li>Work remotely</li>\n<li>Continuing education, training, conferences</li>\n<li>Company-sponsored coursework, exams, and certifications</li>\n</ul><div>Being a consultant in our team is a fun, challenging, and rewarding career choice. Your contributions are highly valued by clients, and the work you do often has a direct and significant impact on their business.</div><div>You will have the opportunity to work on a variety of projects for our incredible clients, which will accelerate your career growth. You’ll collaborate with modern technologies and work alongside some of the best professionals in the industry!</div><div>If you’re eager to be part of an exciting, challenging, and rapidly growing consultancy, we encourage you to apply. </div><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+   "pubDate": 1791530170,
+   "expiryDate": 1796714170,
+   "applicationLink": "https://himalayas.app/companies/bluelight-consulting/jobs/senior-business-analyst-remote-latin-america-6899264264",
+   "guid": "https://himalayas.app/companies/bluelight-consulting/jobs/senior-business-analyst-remote-latin-america-6899264264"
+  },
+  {
+   "title": "Senior QA Engineer",
+   "excerpt": "Role Summary:We are seeking a detail-oriented, highly skilled Senior Quality Assurance Engineer with strong expertise in both manual and automated testing.",
+   "companyName": "Makai Digital",
+   "companySlug": "makai-digital",
+   "companyLogo": "https://cdn-images.himalayas.app/wsp0mcziwosabciwqd2h0bo2whrh",
+   "employmentType": "Contractor",
+   "minSalary": null,
+   "maxSalary": null,
+   "salaryPeriod": "annual",
+   "seniority": [
+    "Senior"
+   ],
+   "currency": "USD",
+   "locationRestrictions": [
+    "Argentina",
+    "Bolivia",
+    "Brazil",
+    "Canada",
+    "Chile",
+    "Colombia",
+    "Ecuador",
+    "Paraguay",
+    "Peru",
+    "United States",
+    "Uruguay"
+   ],
+   "timezoneRestrictions": [
+    -10,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3.5,
+    -3,
+    -2,
+    14
+   ],
+   "categories": [
+    "QA-Engineer",
+    "Automation-Testing",
+    "Software-QA-Engineer",
+    "QA-Analyst",
+    "Senior-QA-Engineering",
+    "Senior-Quality-Engineer",
+    "Senior-QA-Tester",
+    "Software-Quality-Engineer",
+    "Senior-QA-Analyst",
+    "Senior-QA-Automation-Engineer"
+   ],
+   "parentCategories": [
+    "Developer"
+   ],
+   "description": "<h3>Role Summary:</h3><p>We are seeking a detail-oriented, highly skilled Senior Quality Assurance Engineer with strong expertise in both manual and automated testing. In this role, you will be responsible for defining test strategies, executing hands-on manual exploratory testing, and designing scalable test automation frameworks across web, mobile, and API applications. You will collaborate closely with developers, product managers, and technical leads to ensure our solutions meet the highest standards of performance, reliability, and security.</p><h3>What You'll Do:</h3><ul>\n<li><p><strong>Test Strategy &amp; Planning:</strong> Define comprehensive QA strategies, test plans, and detailed test cases based on product specs, wireframes, and acceptance criteria.</p></li>\n<li><p><strong>Manual &amp; Exploratory Testing:</strong> Perform thorough functional, regression, integration, accessibility, and exploratory testing to catch complex edge cases and usability issues.</p></li>\n<li><p><strong>Automation Engineering:</strong> Design, build, and maintain robust, scalable test automation frameworks from scratch for web applications and APIs.</p></li>\n<li><p><strong>API Testing:</strong> Validate RESTful and GraphQL APIs using both automated suites and manual tools (e.g., Postman).</p></li>\n<li><p><strong>CI/CD Integration:</strong> Integrate automated test suites into CI/CD pipelines (e.g., GitHub Actions) to enable continuous testing and rapid deployment cycles.</p></li>\n<li><p><strong>Defect Management:</strong> Identify, document, prioritize, and track bugs using Jira, working directly with engineering teams to ensure timely resolution.</p></li>\n<li><p><strong>Quality Advocacy:</strong> Champion quality best practices across the SDLC, participating in backlog refinement and code reviews to prevent defects early in development.</p></li>\n</ul><h3>Must-Haves:</h3><ul>\n<li><p><strong>Experience:</strong> 5+ years of professional experience in software quality assurance, with a proven track record in both manual and automated testing.</p></li>\n<li><p><strong>Automation Proficiency:</strong> Hands-on experience building and maintaining modern test automation frameworks using tools like <strong>Cypress, Playwright, or Selenium</strong> in <strong>TypeScript, JavaScript, or Python</strong>.</p></li>\n<li><p><strong>API Testing:</strong> Deep experience testing APIs (REST, GraphQL) using tools like <strong>Postman</strong> and automated API testing libraries.</p></li>\n<li><p><strong>Manual Testing Excellence:</strong> Strong analytical skills with expertise in exploratory testing, edge-case identification, and test plan creation.</p></li>\n<li><p><strong>CI/CD &amp; DevOps:</strong> Experience integrating automated test suites into CI/CD pipelines (<strong>GitHub Actions, GitLab CI, or Jenkins</strong>).</p></li>\n<li><p><strong>Tooling:</strong> Proficiency with bug tracking and test management systems (<strong>Jira, Confluence, TestRail, or Zephyr</strong>).</p></li>\n<li><p><strong>Agile Collaboration:</strong> Strong knowledge of Agile/Scrum processes and excellent cross-functional communication skills.</p></li>\n</ul><h3>Nice-to-Haves:</h3><ul>\n<li><p>Experience with performance and load testing tools (<strong>k6, JMeter, Gatling</strong>).</p></li>\n<li><p>Knowledge of web accessibility standards (<strong>WCAG 2.1 AA</strong>) and accessibility testing tools (e.g., Axe).</p></li>\n<li><p>Familiarity with containerization (<strong>Docker</strong>) and cloud environments (<strong>AWS</strong>).</p></li>\n<li><p>Prior experience working in a software consulting, digital agency, or enterprise professional services setting.</p></li>\n</ul><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+   "pubDate": 1791530049,
+   "expiryDate": 1796714048,
+   "applicationLink": "https://himalayas.app/companies/makai-digital/jobs/senior-qa-engineer",
+   "guid": "https://himalayas.app/companies/makai-digital/jobs/senior-qa-engineer"
+  }
+ ]
+}
