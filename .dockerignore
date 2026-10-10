@@ -1,0 +1,34 @@
+# Build context excludes.
+#
+# The compose files build from the repository root (`context: ..`), so without
+# this every image would receive the whole working tree — 290 MB by default,
+# including:
+#
+#   * web/node_modules — pnpm's tree is made of SYMLINKS (e.g.
+#     @tanstack/react-query -> ../.pnpm/...). BuildKit cannot copy a symlink
+#     whose target is a directory and fails the build with
+#     "cannot copy to non-directory". It is reinstalled inside the image anyway.
+#   * .env — secrets. Images are configured through the environment, never baked.
+#   * .devdb, data, bin — local runtime state: the dev Postgres cluster, uploaded
+#     CVs, and host-compiled binaries.
+
+# --- secrets ---------------------------------------------------------------
+.env
+.env.*
+
+# --- host build artifacts and dependencies ---------------------------------
+**/node_modules
+web/dist
+web/coverage
+bin
+**/*.log
+
+# --- local runtime state ---------------------------------------------------
+.devdb
+data
+
+# --- version control and editor cruft --------------------------------------
+.git
+.gitignore
+.dockerignore
+.DS_Store
