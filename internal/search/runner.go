@@ -35,7 +35,9 @@ type RunnerConfig struct {
 // DefaultRunnerConfig returns sensible production defaults.
 func DefaultRunnerConfig() RunnerConfig {
 	return RunnerConfig{
-		PerSourceLimit: 100,
+		// Up to 1000 listings per source per run. Paginated adapters walk as many
+		// pages as that needs (see sources.maxPages for the ceiling).
+		PerSourceLimit: 9999,
 		SourceTimeout:  45 * time.Second,
 		Policy:         jobs.DefaultExpiryPolicy(),
 		HighMatchMin:   70,
@@ -314,6 +316,7 @@ func (r *Runner) buildQuery(ctx context.Context, userID uuid.UUID, prefs candida
 		Limit:           r.cfg.PerSourceLimit,
 		Now:             r.now(),
 	}
+	markets := make([]string, 0, len(prefs.Locations))
 	for _, loc := range prefs.Locations {
 		if q.Country == "" && loc.Country != "" {
 			q.Country = loc.Country
@@ -321,7 +324,14 @@ func (r *Runner) buildQuery(ctx context.Context, userID uuid.UUID, prefs candida
 		if q.City == "" && loc.City != "" {
 			q.City = loc.City
 		}
+		// Every configured market, so a multi-market source (JobStreet) can
+		// search Jakarta AND Singapore AND Malaysia in one run instead of only
+		// the first location.
+		if c := strings.ToUpper(strings.TrimSpace(loc.Country)); c != "" {
+			markets = append(markets, c)
+		}
 	}
+	q.Countries = sources.DedupeStrings(markets)
 	for _, w := range watchlist {
 		q.Watchlist = append(q.Watchlist, sources.Watchlist{SourceID: w.SourceID, BoardSlug: w.BoardSlug, Company: w.Company})
 	}

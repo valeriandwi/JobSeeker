@@ -105,6 +105,10 @@ type Query struct {
 	Keywords        []string
 	ExcludeKeywords []string
 	Country         string // ISO alpha-2 preference, best effort
+	// Countries lists every configured location's country, in order. A
+	// multi-market source (JobStreet) searches each one; single-market adapters
+	// keep reading Country and ignore this.
+	Countries       []string
 	City            string
 	IncludeRemote   bool
 	Limit           int // per-source cap; adapters must honour it

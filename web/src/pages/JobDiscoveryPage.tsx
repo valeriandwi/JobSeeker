@@ -12,12 +12,20 @@ import { ScoreBadge } from '../components/ScoreBadge'
 import { UnknownChip } from '../components/UnknownChip'
 import { EmptyState, ErrorState, LoadingState } from '../components/ui/States'
 import { ErrorBanner } from '../components/ErrorBanner'
-import { formatSalary, relativeTime } from '../lib/format'
+import { formatSalary, relativeTime, shortDescription } from '../lib/format'
+import { TECH_CHIP_LIMIT, detectTechStack } from '../lib/techStack'
+import {
+  arrangementLabel,
+  arrangementTone,
+  employmentTypeLabel,
+  employmentTypeTone,
+} from '../lib/status'
 import {
   ARRANGEMENT_OPTIONS,
   EMPLOYMENT_TYPE_OPTIONS,
   JOB_STATUS_OPTIONS,
   SORT_OPTIONS,
+  DEFAULT_SORT,
   filtersToParams,
   parseFilters,
 } from '../lib/filters'
@@ -28,6 +36,9 @@ const SORT_LABELS = new Set(SORT_OPTIONS.map((o) => o.value))
 export function JobRow({ job }: { job: Job }) {
   const salary = formatSalary(job)
   const primarySource = job.sources[0]
+  // Derived from the listing text and labelled as such in the cell: the sources
+  // publish no tech stack we could state as a fact (see lib/techStack.ts).
+  const detectedTech = detectTechStack([job.title, job.description_summary].filter(Boolean).join(' '))
   return (
     <tr>
       <td className="px-3 py-3 align-top">
@@ -39,6 +50,43 @@ export function JobRow({ job }: { job: Job }) {
           <UnknownChip value={job.company} />
         </div>
       </td>
+      {/* Short preview of the vacancy summary: enough to judge relevance without
+          opening the posting. The full text stays in the title attribute. */}
+      <td className="px-3 py-3 align-top text-sm text-slate-600">
+        {job.description_summary ? (
+          <span className="block max-w-sm" title={job.description_summary}>
+            {shortDescription(job.description_summary)}
+          </span>
+        ) : (
+          <UnknownChip value={null} />
+        )}
+      </td>
+      {/* Derived, not source data: the sources publish no usable tech stack (see
+          lib/techStack.ts). Chips are labelled as detected and never presented as
+          a fact about the vacancy. */}
+      <td className="px-3 py-3 align-top text-sm">
+        {detectedTech.length > 0 ? (
+          <div
+            className="flex max-w-xs flex-wrap gap-1"
+            title="Detected by scanning this listing's title and description. The source publishes no tech stack — treat it as a reading aid, not a fact."
+          >
+            {detectedTech.slice(0, TECH_CHIP_LIMIT).map((tech) => (
+              <Badge key={tech} tone="brand">
+                {tech}
+              </Badge>
+            ))}
+            {detectedTech.length > TECH_CHIP_LIMIT && (
+              <Badge tone="neutral" title={detectedTech.join(', ')}>
+                +{detectedTech.length - TECH_CHIP_LIMIT}
+              </Badge>
+            )}
+          </div>
+        ) : (
+          <Badge tone="neutral" title="Scanned the title and description; no known technology names were found.">
+            None detected
+          </Badge>
+        )}
+      </td>
       <td className="px-3 py-3 align-top text-sm text-slate-600">
         {job.location_city || job.location_country ? (
           <span>{[job.location_city, job.location_country].filter(Boolean).join(', ')}</span>
@@ -46,11 +94,37 @@ export function JobRow({ job }: { job: Job }) {
           <UnknownChip value={null} />
         )}
       </td>
-      <td className="px-3 py-3 align-top text-sm">
-        <UnknownChip value={job.employment_type} />
+      <td className="px-3 py-3 align-top whitespace-nowrap text-sm">
+        {job.employment_type ? (
+          <Badge
+            tone={employmentTypeTone(job.employment_type)}
+            title={
+              job.attributes_verified.includes('employment_type')
+                ? 'Published by the source.'
+                : 'Value present, but the source did not mark it as verified.'
+            }
+          >
+            {employmentTypeLabel(job.employment_type)}
+          </Badge>
+        ) : (
+          <UnknownChip value={null} />
+        )}
       </td>
-      <td className="px-3 py-3 align-top text-sm">
-        <UnknownChip value={job.work_arrangement} />
+      <td className="px-3 py-3 align-top whitespace-nowrap text-sm">
+        {job.work_arrangement ? (
+          <Badge
+            tone={arrangementTone(job.work_arrangement)}
+            title={
+              job.attributes_verified.includes('work_arrangement')
+                ? 'Published by the source.'
+                : 'Value present, but the source did not mark it as verified.'
+            }
+          >
+            {arrangementLabel(job.work_arrangement)}
+          </Badge>
+        ) : (
+          <UnknownChip value={null} />
+        )}
       </td>
       <td className="px-3 py-3 align-top text-sm">
         {salary ? <span>{salary}</span> : <Badge tone="neutral">Not disclosed</Badge>}
@@ -89,7 +163,7 @@ export function JobRow({ job }: { job: Job }) {
           <UnknownChip value={null} fallback="No source" />
         )}
       </td>
-      <td className="px-3 py-3 align-top text-sm text-slate-600">
+      <td className="px-3 py-3 align-top whitespace-nowrap text-sm text-slate-600">
         {job.first_discovered_at ? relativeTime(job.first_discovered_at) : <UnknownChip value={null} />}
       </td>
       <td className="px-3 py-3 align-top text-sm">
@@ -173,7 +247,7 @@ export function JobsFilterForm({
       </Select>
       <Select
         label="Sort by"
-        value={SORT_LABELS.has(filters.sort ?? '') ? (filters.sort as string) : 'score'}
+        value={SORT_LABELS.has(filters.sort ?? '') ? (filters.sort as string) : DEFAULT_SORT}
         onChange={(e) => set('sort', e.target.value)}
       >
         {SORT_OPTIONS.map((o) => (
@@ -183,7 +257,7 @@ export function JobsFilterForm({
         ))}
       </Select>
       <div className="flex items-end">
-        <Button type="button" variant="secondary" onClick={() => onChange({ sort: 'score' })}>
+        <Button type="button" variant="secondary" onClick={() => onChange({ sort: DEFAULT_SORT })}>
           Reset filters
         </Button>
       </div>
@@ -271,8 +345,15 @@ export function JobDiscoveryPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Job Discovery</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold">Job Discovery</h1>
+          <p className="text-sm text-slate-600">
+            Vacancies found by your enabled sources, scored against your confirmed profile —
+            newest discovery first. Use <strong>Refresh matches</strong> to fetch new listings and
+            re-score the ones already here.
+          </p>
+        </div>
         <RefreshMatchesPanel />
       </div>
       <JobsFilterForm filters={filters} onChange={onFilterChange} />
@@ -291,9 +372,12 @@ export function JobDiscoveryPage() {
           <div className="rounded-lg border border-slate-200 bg-white">
             <Table
               caption="Job search results"
+              minWidthClassName="min-w-[1120px]"
               head={[
                 'Score',
                 'Title / Company',
+                'Description',
+                'Tech (detected)',
                 'Location',
                 'Type',
                 'Arrangement',

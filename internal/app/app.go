@@ -58,7 +58,7 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 	registry := buildRegistry(cfg)
 
 	runner := search.NewRunner(searchRepo, jobsRepo, candidateRepo, registry, logger, search.RunnerConfig{
-		PerSourceLimit: 100,
+		PerSourceLimit: 1000,
 		SourceTimeout:  cfg.SourceHTTPTimeout * 3,
 		Policy:         jobs.DefaultExpiryPolicy(),
 		HighMatchMin:   70,
@@ -122,6 +122,10 @@ func buildRegistry(cfg config.Config) *sources.Registry {
 		"recruitee":       60,
 		"personio":        60,
 		"kalibrr":         30,
+		// JobStreet sits behind Cloudflare and its terms prohibit automated
+		// access; the operator asked for it anyway, so the politeness budget is
+		// deliberately the tightest here (one request every 3s, budget shared).
+		"jobstreet": 20,
 	} {
 		fetcher.SetRateLimit(id, perMinute)
 	}
@@ -140,6 +144,7 @@ func buildRegistry(cfg config.Config) *sources.Registry {
 		sources.NewRecruitee(opt),
 		sources.NewPersonio(opt),
 		sources.NewKalibrr(opt),
+		sources.NewJobStreet(opt),
 	)
 }
 

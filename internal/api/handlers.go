@@ -827,7 +827,7 @@ func (s *Server) handleGetRun(w http.ResponseWriter, r *http.Request) {
 
 // --- jobs ------------------------------------------------------------------
 
-var allowedSorts = []string{"score", "published_at", "salary", "company"}
+var allowedSorts = []string{"first_discovered", "score", "published_at", "salary", "company"}
 
 func (s *Server) handleListJobs(w http.ResponseWriter, r *http.Request) {
 	user := s.user(r)

@@ -18,7 +18,15 @@ export const FILTER_KEYS = [
 
 export type FilterKey = (typeof FILTER_KEYS)[number]
 
+/**
+ * Default sort: newest discovery first. The list is a "what's new" view, so a
+ * just-discovered vacancy surfaces even when its score is lower than older
+ * ones. Must stay in step with the server default in `internal/jobs/repository.go`.
+ */
+export const DEFAULT_SORT = 'first_discovered'
+
 export const SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: 'first_discovered', label: 'First discovered' },
   { value: 'score', label: 'Match score' },
   { value: 'published_at', label: 'Published date' },
   { value: 'salary', label: 'Salary' },

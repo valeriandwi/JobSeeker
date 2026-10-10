@@ -1,5 +1,23 @@
 import type { Job } from '../api/types'
 
+/**
+ * One-line preview of a vacancy summary for the job table.
+ *
+ * Collapses the source's whitespace (adapters store plain text that may carry
+ * newlines) and cuts on a word boundary so a row stays scannable. The full text
+ * stays available in the row's `title`, because this is a preview — the table is
+ * not where the advertisement is read. Returns '' for missing input, so callers
+ * can render their "unknown" affordance instead of an empty cell.
+ */
+export function shortDescription(text: string | null | undefined, max = 160): string {
+  const collapsed = (text ?? '').replace(/\s+/g, ' ').trim()
+  if (collapsed.length <= max) return collapsed
+  const cut = collapsed.slice(0, max)
+  const lastSpace = cut.lastIndexOf(' ')
+  const body = lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut
+  return `${body.trimEnd()}…`
+}
+
 /** Human relative time, e.g. "3 days ago". Returns '' for missing input. */
 export function relativeTime(iso: string | null | undefined, now: Date = new Date()): string {
   if (!iso) return ''

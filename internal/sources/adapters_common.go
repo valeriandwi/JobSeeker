@@ -16,8 +16,12 @@ const (
 	descriptionSummaryLimit = 4000
 	// defaultFeedLimit is used when Query.Limit is unset for paginated feeds.
 	defaultFeedLimit = 50
-	// maxPages bounds how many pages a paginated feed adapter will walk.
-	maxPages = 5
+	// maxPages bounds how many pages a paginated feed adapter will walk. It is a
+	// ceiling, not a target: every paging adapter stops as soon as it has
+	// collected the requested limit, so this only has to be big enough for the
+	// largest per-run limit — 1000 listings at 100 per page needs 10 pages, and
+	// 20 leaves headroom without letting a bad limit loop forever.
+	maxPages = 20
 )
 
 // summarize converts a (possibly HTML-escaped) description to plain text and

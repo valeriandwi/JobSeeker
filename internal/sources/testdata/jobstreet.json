@@ -1,0 +1,244 @@
+{
+ "data": [
+  {
+   "advertiser": {
+    "id": "61141298",
+    "description": "PT BANK NEO COMMERCE Tbk."
+   },
+   "bulletPoints": [],
+   "branding": {
+    "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/ab35ff3e-eb39-489d-9f66-2b36ebbf355f.1/jdpLogo"
+   },
+   "classifications": [
+    {
+     "classification": {
+      "id": "6281",
+      "description": "Information & Communication Technology"
+     },
+     "subclassification": {
+      "id": "6290",
+      "description": "Engineering - Software"
+     }
+    }
+   ],
+   "companyName": "PT BANK NEO COMMERCE Tbk.",
+   "companyProfileStructuredDataId": 3046723,
+   "displayStyle": {
+    "search": "sourcrProfile"
+   },
+   "displayType": "standard",
+   "employer": {
+    "id": "3046723",
+    "name": "PT BANK NEO COMMERCE Tbk.",
+    "companyId": "176639238195911",
+    "companyUrl": "https://id.jobstreet.com/companies/pt-bank-neo-commerce-tbk-176639238195911"
+   },
+   "id": "95026621",
+   "isFeatured": false,
+   "listingDate": "2026-10-02T07:20:34Z",
+   "listingDateDisplay": "7d ago",
+   "locations": [
+    {
+     "label": "South Jakarta, Jakarta",
+     "countryCode": "ID",
+     "seoHierarchy": [
+      {
+       "contextualName": "South Jakarta Jakarta"
+      },
+      {
+       "contextualName": "Jakarta"
+      }
+     ]
+    }
+   ],
+   "roleId": "software-engineer",
+   "salaryLabel": "",
+   "solMetadata": {
+    "searchRequestToken": "81ee4845-461a-4166-baa1-6e5173f497a0",
+    "token": "0~81ee4845-461a-4166-baa1-6e5173f497a0",
+    "jobId": "95026621",
+    "section": "MAIN",
+    "sectionRank": 1,
+    "jobAdType": "ORGANIC",
+    "tags": {
+     "mordor__flights": "mordor_1124",
+     "mordor__s": "0"
+    }
+   },
+   "teaser": "Design and develop robust software applications for banking and financial products.",
+   "title": "Software Engineer",
+   "tracking": "ewogICJ0b2tlbiI6ICI1MDA1ZTdiOC05OTgzLTQyYzUtOTk2Ny02NTM5NTRmNDJmMjlfMSIKfQ==",
+   "workTypes": [
+    "Full time"
+   ],
+   "workArrangements": {
+    "data": [
+     {
+      "id": "1",
+      "label": {
+       "text": "On-site"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "advertiser": {
+    "id": "60235663",
+    "description": "PT Strange Tech Cikarang Indonesia"
+   },
+   "bulletPoints": [],
+   "branding": {
+    "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/63dda935-15ac-4025-bb87-16a839501a69.1/jdpLogo"
+   },
+   "classifications": [
+    {
+     "classification": {
+      "id": "6281",
+      "description": "Information & Communication Technology"
+     },
+     "subclassification": {
+      "id": "6287",
+      "description": "Developers/Programmers"
+     }
+    }
+   ],
+   "companyName": "PT Strange Tech Cikarang Indonesia",
+   "companyProfileStructuredDataId": 665853,
+   "displayStyle": {
+    "search": "sourcrProfile"
+   },
+   "displayType": "standard",
+   "employer": {
+    "id": "665853",
+    "name": "PT Strange Tech Cikarang Indonesia",
+    "companyId": "168556183499724",
+    "companyUrl": "https://id.jobstreet.com/companies/pt-strange-tech-cikarang-indonesia-168556183499724"
+   },
+   "id": "95163313",
+   "isFeatured": false,
+   "listingDate": "2026-10-09T03:42:47Z",
+   "listingDateDisplay": "1d ago",
+   "locations": [
+    {
+     "label": "South Cikarang, West Java",
+     "countryCode": "ID",
+     "seoHierarchy": [
+      {
+       "contextualName": "South Cikarang West Java"
+      },
+      {
+       "contextualName": "West Java"
+      }
+     ]
+    }
+   ],
+   "roleId": "software-engineer",
+   "salaryLabel": "Rp\u00a06.500.000 \u2013 Rp\u00a08.000.000 per month",
+   "solMetadata": {
+    "searchRequestToken": "81ee4845-461a-4166-baa1-6e5173f497a0",
+    "token": "0~81ee4845-461a-4166-baa1-6e5173f497a0",
+    "jobId": "95163313",
+    "section": "MAIN",
+    "sectionRank": 2,
+    "jobAdType": "ORGANIC",
+    "tags": {
+     "mordor__flights": "mordor_1124",
+     "mordor__s": "0"
+    }
+   },
+   "teaser": "Kembangkan skill teknis pada proyek menantang. Kompensasi kompetitif, asuransi kesehatan, fleksibilitas kontrak.",
+   "title": "Software Engineer",
+   "tracking": "ewogICJ0b2tlbiI6ICI1MDA1ZTdiOC05OTgzLTQyYzUtOTk2Ny02NTM5NTRmNDJmMjlfMiIKfQ==",
+   "workTypes": [
+    "Contract/Temp"
+   ],
+   "workArrangements": {
+    "data": [
+     {
+      "id": "1",
+      "label": {
+       "text": "On-site"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "advertiser": {
+    "id": "63899114",
+    "description": "Atomix LLC"
+   },
+   "bulletPoints": [],
+   "branding": {
+    "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/c33368e8-dd59-4886-a223-2c8bda45e644.2/jdpLogo"
+   },
+   "classifications": [
+    {
+     "classification": {
+      "id": "6281",
+      "description": "Information & Communication Technology"
+     },
+     "subclassification": {
+      "id": "6290",
+      "description": "Engineering - Software"
+     }
+    }
+   ],
+   "companyProfileStructuredDataId": 0,
+   "displayType": "standard",
+   "id": "95041437",
+   "isFeatured": false,
+   "listingDate": "2026-10-07T01:15:41Z",
+   "listingDateDisplay": "3d ago",
+   "locations": [
+    {
+     "label": "Jakarta",
+     "countryCode": "ID",
+     "seoHierarchy": [
+      {
+       "contextualName": "Jakarta"
+      }
+     ]
+    }
+   ],
+   "roleId": "software-engineer",
+   "salaryLabel": "Rp\u00a0180,000,000 \u2013 Rp\u00a0250,000,000 per year",
+   "solMetadata": {
+    "searchRequestToken": "81ee4845-461a-4166-baa1-6e5173f497a0",
+    "token": "0~81ee4845-461a-4166-baa1-6e5173f497a0",
+    "jobId": "95041437",
+    "section": "MAIN",
+    "sectionRank": 3,
+    "jobAdType": "ORGANIC",
+    "tags": {
+     "mordor__flights": "mordor_1124",
+     "mordor__s": "0"
+    }
+   },
+   "teaser": "Founding Software Engineer to own AI applications from customer requirements through production.",
+   "title": "Senior Software Engineer",
+   "tracking": "ewogICJ0b2tlbiI6ICI1MDA1ZTdiOC05OTgzLTQyYzUtOTk2Ny02NTM5NTRmNDJmMjlfMyIKfQ==",
+   "workTypes": [
+    "Full time"
+   ],
+   "workArrangements": {
+    "data": [
+     {
+      "id": "3",
+      "label": {
+       "text": "Remote"
+      }
+     }
+    ],
+    "displayText": "Remote"
+   }
+  }
+ ],
+ "totalCount": 1419,
+ "solMetadata": {
+  "totalJobCount": 1419,
+  "pageSize": 30,
+  "pageNumber": 1
+ }
+}

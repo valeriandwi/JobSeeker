@@ -92,7 +92,10 @@ fails the run instead of printing a warning.
 2. A due schedule takes a **PostgreSQL advisory lock** keyed on the schedule id,
    so running two API/scheduler instances cannot run the same schedule twice.
 3. `search.Runner` loads the confirmed profile and preferences, builds one query,
-   and calls each enabled adapter with a per-source timeout and rate limit.
+   and calls each enabled adapter with a per-source timeout and rate limit. Each
+   source contributes up to **1000 listings per run** (`PerSourceLimit`);
+   paginated adapters walk as many pages as that needs (100/page, ceiling of 20
+   pages) and stop early when the feed reports no more results.
 4. Every listing is normalised and upserted. Duplicate detection has three tiers:
    same source id → same canonical URL hash → fuzzy title/company/location
    similarity. Cross-portal duplicates merge into one canonical vacancy while
@@ -116,7 +119,7 @@ internal/
   auth/            Argon2id passwords, server-side sessions
   candidate/       confirmed profile, preferences, resume metadata
   resume/          PDF/DOCX text extraction + deterministic profile extraction
-  sources/         adapter contract, HTTP fetcher, 8 source adapters, fixtures
+  sources/         adapter contract, HTTP fetcher, 13 source adapters, fixtures
   matching/        hard constraints + weighted scoring with explanations
   jobs/            canonical vacancies, dedup, lifecycle, job queries
   search/          run orchestration, source settings, run history, cron maths

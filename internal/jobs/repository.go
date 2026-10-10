@@ -419,16 +419,21 @@ func (r *Repository) ListJobs(ctx context.Context, userID uuid.UUID, f JobFilter
 		add("coalesce(lm.score, 0) >= ?", f.MinScore)
 	}
 
-	orderBy := "order by coalesce(lm.score, 0) desc, j.published_at desc nulls last, j.first_discovered_at desc"
+	// Newest discovery first is the default: the list is a "what's new" view, so
+	// a freshly discovered vacancy should surface even when its score is lower
+	// than older ones. Score ordering stays available via sort=score.
+	orderBy := "order by j.first_discovered_at desc, coalesce(lm.score, 0) desc, j.published_at desc nulls last"
 	switch f.Sort {
+	case "first_discovered", "":
+		// default
+	case "score":
+		orderBy = "order by coalesce(lm.score, 0) desc, j.published_at desc nulls last, j.first_discovered_at desc"
 	case "published_at":
 		orderBy = "order by j.published_at desc nulls last, coalesce(lm.score, 0) desc"
 	case "salary":
 		orderBy = "order by j.salary_max desc nulls last, coalesce(lm.score, 0) desc"
 	case "company":
 		orderBy = "order by j.company asc, coalesce(lm.score, 0) desc"
-	case "score", "":
-		// default
 	}
 
 	whereSQL := strings.Join(where, " and ")

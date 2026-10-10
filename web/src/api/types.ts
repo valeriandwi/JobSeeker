@@ -234,6 +234,8 @@ export interface Job {
   match_explanation: MatchExplanationPart[]
   sources: JobSource[]
   attributes_verified: string[]
+  /** Plain-text preview of the advertisement; '' when the source published none. */
+  description_summary?: string | null
 }
 
 export interface JobDetail extends Job {

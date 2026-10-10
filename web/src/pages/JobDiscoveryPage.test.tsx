@@ -37,6 +37,7 @@ function makeJob(overrides: Partial<Job> = {}): Job {
       },
     ],
     attributes_verified: ['salary'],
+    description_summary: 'Build and maintain our Go services.',
     ...overrides,
   }
 }
@@ -110,6 +111,60 @@ describe('JobDiscoveryPage', () => {
     expect(calledUrl).toContain('arrangement=remote')
     expect(calledUrl).toContain('min_score=60')
   })
+
+  it('explains what the page shows', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ jobs: [], total: 0, page: 1, per_page: 20 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+
+    expect(await screen.findByRole('heading', { name: /job discovery/i })).toBeInTheDocument()
+    expect(
+      screen.getByText(/Vacancies found by your enabled sources, scored against your confirmed profile/i),
+    ).toBeInTheDocument()
+  })
+
+  it('sorts by first discovered by default and offers it in the list', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ jobs: [], total: 0, page: 1, per_page: 20 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+
+    const select = await screen.findByLabelText(/sort by/i)
+    expect((select as HTMLSelectElement).value).toBe('first_discovered')
+    expect(screen.getByRole('option', { name: /first discovered/i })).toBeInTheDocument()
+
+    // No sort param is sent, so the URL stays clean; the server applies the same
+    // default. What must never happen is the old score-first default creeping back.
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+    expect(String(fetchMock.mock.calls[0]?.[0])).not.toContain('sort=score')
+  })
+
+  it('keeps an explicit sort from the URL', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ jobs: [], total: 0, page: 1, per_page: 20 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs?sort=score' })
+
+    const select = await screen.findByLabelText(/sort by/i)
+    expect((select as HTMLSelectElement).value).toBe('score')
+  })
+
+  it('resets back to the default sort, not the old score-first one', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ jobs: [], total: 0, page: 1, per_page: 20 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs?sort=company&q=rust' })
+
+    const select = await screen.findByLabelText(/sort by/i)
+    expect((select as HTMLSelectElement).value).toBe('company')
+
+    fireEvent.click(screen.getByRole('button', { name: /reset filters/i }))
+
+    await waitFor(() =>
+      expect((screen.getByLabelText(/sort by/i) as HTMLSelectElement).value).toBe('first_discovered'),
+    )
+  })
 })
 
 describe('JobRow unknown handling', () => {
@@ -141,6 +196,141 @@ describe('JobRow unknown handling', () => {
     for (const td of Array.from(container.querySelectorAll('td'))) {
       expect(td.textContent?.trim().length ?? 0).toBeGreaterThan(0)
     }
+  })
+
+  it('previews the vacancy summary and keeps the full text on the cell', () => {
+    const full =
+      'Develop and maintain SWITCH modules for mission-critical payment and switching platforms, plus a great deal of extra detail that will never fit inside a single table row.'
+    renderWithProviders(
+      <table>
+        <tbody>
+          <JobRow job={makeJob({ description_summary: full })} />
+        </tbody>
+      </table>,
+    )
+
+    const cell = screen.getByTitle(full)
+    expect(cell.textContent).toContain('Develop and maintain SWITCH modules')
+    expect(cell.textContent?.endsWith('…')).toBe(true)
+    expect((cell.textContent ?? '').length).toBeLessThan(full.length)
+  })
+
+  it('shows Unknown when the source published no summary', () => {
+    const { container } = renderWithProviders(
+      <table>
+        <tbody>
+          <JobRow job={makeJob({ description_summary: '' })} />
+        </tbody>
+      </table>,
+    )
+
+    expect(screen.getAllByText('Unknown').length).toBeGreaterThanOrEqual(1)
+    // The preview cell must never render blank.
+    for (const td of Array.from(container.querySelectorAll('td'))) {
+      expect(td.textContent?.trim().length ?? 0).toBeGreaterThan(0)
+    }
+  })
+
+  it('shows detected technologies as clearly derived, never as source data', () => {
+    renderWithProviders(
+      <table>
+        <tbody>
+          <JobRow
+            job={makeJob({
+              title: 'Senior Backend Engineer',
+              description_summary: 'Golang, PostgreSQL and Docker on AWS.',
+              // Nothing here claims a tech stack: detection is derived from text.
+              attributes_verified: [],
+            })}
+          />
+        </tbody>
+      </table>,
+    )
+
+    for (const tech of ['Golang', 'PostgreSQL', 'Docker', 'AWS']) {
+      expect(screen.getByText(tech)).toBeInTheDocument()
+    }
+    // The cell itself says where the chips came from.
+    expect(screen.getByTitle(/Detected by scanning this listing/i)).toBeInTheDocument()
+  })
+
+  it('says None detected rather than Unknown when the text names no technology', () => {
+    const { container } = renderWithProviders(
+      <table>
+        <tbody>
+          <JobRow job={makeJob({ title: 'Warehouse Operative', description_summary: 'Pick and pack orders.' })} />
+        </tbody>
+      </table>,
+    )
+
+    // "we looked and found none" is a different statement from "the source does
+    // not publish this" — the row must not conflate them.
+    expect(screen.getByText('None detected')).toBeInTheDocument()
+    for (const td of Array.from(container.querySelectorAll('td'))) {
+      expect(td.textContent?.trim().length ?? 0).toBeGreaterThan(0)
+    }
+  })
+
+  it('caps the chips and keeps the full list reachable on the overflow badge', () => {
+    const stack = ['Golang', 'React', 'PostgreSQL', 'AWS', 'Kubernetes', 'Docker']
+    renderWithProviders(
+      <table>
+        <tbody>
+          <JobRow
+            job={makeJob({
+              title: 'Platform Engineer',
+              // Prose around the list, so the overflow badge's title is not
+              // ambiguous with the description cell's.
+              description_summary: `You will work with ${stack.join(', ')} every day.`,
+            })}
+          />
+        </tbody>
+      </table>,
+    )
+
+    expect(screen.getByText('+2')).toBeInTheDocument()
+    expect(screen.getByTitle(stack.join(', '))).toBeInTheDocument()
+  })
+
+  it('colour-codes employment type and arrangement without hiding the value', () => {
+    renderWithProviders(
+      <table>
+        <tbody>
+          <JobRow
+            job={makeJob({
+              employment_type: 'full_time',
+              work_arrangement: 'hybrid',
+              attributes_verified: ['employment_type', 'work_arrangement'],
+            })}
+          />
+        </tbody>
+      </table>,
+    )
+
+    // The label still states the value: colour is a scanning aid, not the signal.
+    expect(screen.getByText('Full time').className).toContain('bg-green-50')
+    expect(screen.getByText('Hybrid').className).toContain('bg-amber-50')
+    expect(screen.getAllByTitle('Published by the source.')).toHaveLength(2)
+  })
+
+  it('does not claim source verification the source never gave', () => {
+    renderWithProviders(
+      <table>
+        <tbody>
+          <JobRow
+            job={makeJob({
+              employment_type: 'contract',
+              work_arrangement: 'onsite',
+              attributes_verified: [],
+            })}
+          />
+        </tbody>
+      </table>,
+    )
+
+    expect(screen.getByText('Contract').className).toContain('bg-amber-50')
+    expect(screen.getByText('On-site').className).toContain('bg-slate-100')
+    expect(screen.getAllByTitle(/did not mark it as verified/i)).toHaveLength(2)
   })
 
   it('renders a source attribution note when backlink is required', () => {

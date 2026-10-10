@@ -272,8 +272,29 @@ func TestListJobsFiltersSortsAndScores(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	t.Run("sorted by score by default", func(t *testing.T) {
+	// Give the weaker match a LATER discovery time: the default sort must follow
+	// discovery, not score, and an equal timestamp would only prove the tiebreak.
+	if _, err := db.Pool.Exec(ctx,
+		`update jobs set first_discovered_at = $1 where id = $2`, now.Add(time.Hour), r2.JobID); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("sorts by first discovered by default", func(t *testing.T) {
 		rows, total, err := repo.ListJobs(ctx, userID, JobFilter{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if total != 2 || len(rows) != 2 {
+			t.Fatalf("total=%d rows=%d", total, len(rows))
+		}
+		// Discovered later and scored lower: it must still come first.
+		if rows[0].Title != "Warehouse Operative" {
+			t.Fatalf("expected the most recently discovered vacancy first, got %q", rows[0].Title)
+		}
+	})
+
+	t.Run("sorted by score on request", func(t *testing.T) {
+		rows, total, err := repo.ListJobs(ctx, userID, JobFilter{Sort: "score"})
 		if err != nil {
 			t.Fatal(err)
 		}
