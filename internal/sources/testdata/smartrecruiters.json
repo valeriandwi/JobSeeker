@@ -1,0 +1,276 @@
+{
+ "offset": 0,
+ "limit": 3,
+ "totalFound": 4639,
+ "content": [
+  {
+   "id": "744000154698590",
+   "name": "Client Service Representative",
+   "uuid": "aed6d9b5-f823-49a5-a9ab-76a69e1e7b44",
+   "jobAdId": "8de19ab0-d720-403c-ac03-7c671baf15c3",
+   "defaultJobAd": true,
+   "refNumber": "REF91981T",
+   "company": {
+    "identifier": "SGS",
+    "name": "SGS"
+   },
+   "releasedDate": "2026-10-09T14:30:30.836Z",
+   "location": {
+    "city": "Fairfield",
+    "region": "NJ",
+    "country": "us",
+    "address": "291 Fairfield Avenue",
+    "postalCode": "07004",
+    "remote": false,
+    "hybrid": false,
+    "latitude": "40.8666513",
+    "longitude": "-74.28422809999999",
+    "fullLocation": "Fairfield, NJ, United States"
+   },
+   "industry": {
+    "id": "consumer_goods",
+    "label": "Consumer Goods"
+   },
+   "department": {
+    "id": "1382056",
+    "label": "Sales, Customer Support"
+   },
+   "function": {
+    "id": "customer_service",
+    "label": "Customer Service"
+   },
+   "typeOfEmployment": {
+    "id": "permanent",
+    "label": "Full-time"
+   },
+   "experienceLevel": {
+    "id": "entry_level",
+    "label": "Entry Level"
+   },
+   "customField": [
+    {
+     "fieldId": "5dc3f05f2074ff54f4ddaefb",
+     "fieldLabel": "Legal Entity",
+     "valueId": "93067acb-a072-473d-a7c3-ed4ae72edd33",
+     "valueLabel": "US_SGS North America Inc."
+    },
+    {
+     "fieldId": "5d946e2bd244ea771ed25c0f",
+     "fieldLabel": "Brands",
+     "valueId": "default",
+     "valueLabel": "SGS"
+    },
+    {
+     "fieldId": "5dc3f124a1a93b14475b7b4e",
+     "fieldLabel": "Business Line",
+     "valueId": "d619dd3a-7ede-4f81-9c42-3b2633494739",
+     "valueLabel": "Connectivity & Products (C&P)"
+    },
+    {
+     "fieldId": "5d946e2bd244ea771ed25c10",
+     "fieldLabel": "Department",
+     "valueId": "1382056",
+     "valueLabel": "Sales, Customer Support"
+    },
+    {
+     "fieldId": "5dc3f156809dca7626e6ccb0",
+     "fieldLabel": "Contract Type",
+     "valueId": "949300c3-4174-4402-b7b5-18d111c2a7c8",
+     "valueLabel": "Standard"
+    },
+    {
+     "fieldId": "COUNTRY",
+     "fieldLabel": "Country/Region",
+     "valueId": "us",
+     "valueLabel": "United States"
+    }
+   ],
+   "visibility": "PUBLIC",
+   "ref": "https://api.smartrecruiters.com/v1/companies/sgs/postings/744000154698590",
+   "language": {
+    "code": "en",
+    "label": "English",
+    "labelNative": "English (US)"
+   }
+  },
+  {
+   "id": "744000154698899",
+   "name": "CDD - Aide Laborantin (H/F)",
+   "uuid": "387d9455-6716-4fee-8090-57d4d2be8c3a",
+   "jobAdId": "7f406818-a9bc-482d-b604-1c537eb9d4b8",
+   "defaultJobAd": true,
+   "refNumber": "REF85230J",
+   "company": {
+    "identifier": "SGS",
+    "name": "SGS"
+   },
+   "releasedDate": "2026-10-09T14:30:22.062Z",
+   "location": {
+    "city": "Oignies",
+    "region": "Hauts-de-France",
+    "country": "fr",
+    "address": "Rue George Sand",
+    "postalCode": "62590",
+    "remote": false,
+    "hybrid": false,
+    "latitude": "50.4735902",
+    "longitude": "2.9809449",
+    "fullLocation": "Oignies, Hauts-de-France, France"
+   },
+   "industry": {
+    "id": "cosmetics",
+    "label": "Cosmetics"
+   },
+   "department": {
+    "id": "1382005",
+    "label": "Laboratory & Testing"
+   },
+   "function": {
+    "id": "analyst",
+    "label": "Analyst"
+   },
+   "typeOfEmployment": {
+    "id": "permanent",
+    "label": "Full-time"
+   },
+   "experienceLevel": {
+    "id": "mid_senior_level",
+    "label": "Mid-Senior Level"
+   },
+   "customField": [
+    {
+     "fieldId": "5dc3f05f2074ff54f4ddaefb",
+     "fieldLabel": "Legal Entity",
+     "valueId": "5734557e-9a84-46b9-bba7-294d7a09f531",
+     "valueLabel": "SGS France"
+    },
+    {
+     "fieldId": "5d946e2bd244ea771ed25c0f",
+     "fieldLabel": "Brands",
+     "valueId": "default",
+     "valueLabel": "SGS"
+    },
+    {
+     "fieldId": "5dc3f124a1a93b14475b7b4e",
+     "fieldLabel": "Business Line",
+     "valueId": "cc7a2fc6-2c1e-4f3d-bf15-a245e4467c63",
+     "valueLabel": "Health & Nutrition (H&N)"
+    },
+    {
+     "fieldId": "5d946e2bd244ea771ed25c10",
+     "fieldLabel": "Department",
+     "valueId": "1382005",
+     "valueLabel": "Laboratory & Testing"
+    },
+    {
+     "fieldId": "5dc3f156809dca7626e6ccb0",
+     "fieldLabel": "Contract Type",
+     "valueId": "949300c3-4174-4402-b7b5-18d111c2a7c8",
+     "valueLabel": "Standard"
+    },
+    {
+     "fieldId": "COUNTRY",
+     "fieldLabel": "Country/Region",
+     "valueId": "fr",
+     "valueLabel": "France"
+    }
+   ],
+   "visibility": "PUBLIC",
+   "ref": "https://api.smartrecruiters.com/v1/companies/sgs/postings/744000154698899",
+   "language": {
+    "code": "fr",
+    "label": "French",
+    "labelNative": "fran\u00e7ais"
+   }
+  },
+  {
+   "id": "744000154694440",
+   "name": "Preparador de muestras de laboratorio",
+   "uuid": "b1d9900f-e07e-4df1-ba28-549d1a3df9f1",
+   "jobAdId": "105bc197-603d-4a0c-8a38-518d74357707",
+   "defaultJobAd": true,
+   "refNumber": "REF91294E",
+   "company": {
+    "identifier": "SGS",
+    "name": "SGS"
+   },
+   "releasedDate": "2026-10-09T14:14:52.448Z",
+   "location": {
+    "city": "Medell\u00edn",
+    "region": "Antioquia",
+    "country": "co",
+    "address": "Itag\u00fc\u00ed-San Antonio de Prado",
+    "remote": false,
+    "hybrid": false,
+    "latitude": "6.1816276",
+    "longitude": "-75.6416381",
+    "fullLocation": "Medell\u00edn, Antioquia, Colombia"
+   },
+   "industry": {
+    "id": "mining_and_metals",
+    "label": "Mining And Metals"
+   },
+   "department": {
+    "id": "1382005",
+    "label": "Laboratory & Testing"
+   },
+   "function": {
+    "id": "production",
+    "label": "Production"
+   },
+   "typeOfEmployment": {
+    "id": "permanent",
+    "label": "Full-time"
+   },
+   "experienceLevel": {
+    "id": "not_applicable",
+    "label": "Not Applicable"
+   },
+   "customField": [
+    {
+     "fieldId": "5dc3f05f2074ff54f4ddaefb",
+     "fieldLabel": "Legal Entity",
+     "valueId": "472fed84-a8a8-4e00-994f-f9662c778048",
+     "valueLabel": "CO_SGS COLOMBIA SAS"
+    },
+    {
+     "fieldId": "5d946e2bd244ea771ed25c0f",
+     "fieldLabel": "Brands",
+     "valueId": "default",
+     "valueLabel": "SGS"
+    },
+    {
+     "fieldId": "5dc3f124a1a93b14475b7b4e",
+     "fieldLabel": "Business Line",
+     "valueId": "d8f68fff-cbd1-4a88-8683-e3fd369f6b33",
+     "valueLabel": "Natural Resources (NR)"
+    },
+    {
+     "fieldId": "5d946e2bd244ea771ed25c10",
+     "fieldLabel": "Department",
+     "valueId": "1382005",
+     "valueLabel": "Laboratory & Testing"
+    },
+    {
+     "fieldId": "5dc3f156809dca7626e6ccb0",
+     "fieldLabel": "Contract Type",
+     "valueId": "c307eb45-cabd-43f7-afab-1119e6da742b",
+     "valueLabel": "CO - Obra o labor"
+    },
+    {
+     "fieldId": "COUNTRY",
+     "fieldLabel": "Country/Region",
+     "valueId": "co",
+     "valueLabel": "Colombia"
+    }
+   ],
+   "visibility": "PUBLIC",
+   "ref": "https://api.smartrecruiters.com/v1/companies/sgs/postings/744000154694440",
+   "language": {
+    "code": "es-MX",
+    "label": "Spanish (LATAM)",
+    "labelNative": "espa\u00f1ol (LATAM)"
+   }
+  }
+ ]
+}

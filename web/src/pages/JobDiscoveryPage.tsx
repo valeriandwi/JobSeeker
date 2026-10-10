@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { jobsApi } from '../api'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { jobsApi, matchesApi, runsApi } from '../api'
 import type { Job, JobFilters } from '../api/types'
 import { errorMessage } from '../api/client'
 import { Table } from '../components/ui/Table'
@@ -11,6 +11,7 @@ import { Input, Select } from '../components/ui/Input'
 import { ScoreBadge } from '../components/ScoreBadge'
 import { UnknownChip } from '../components/UnknownChip'
 import { EmptyState, ErrorState, LoadingState } from '../components/ui/States'
+import { ErrorBanner } from '../components/ErrorBanner'
 import { formatSalary, relativeTime } from '../lib/format'
 import {
   ARRANGEMENT_OPTIONS,
@@ -190,6 +191,61 @@ export function JobsFilterForm({
   )
 }
 
+/**
+ * Refresh control for the match list.
+ *
+ * Fetches from the enabled sources and then re-scores everything already
+ * discovered against the current confirmed profile — so the scores reflect the
+ * CV as it stands, not whatever profile happened to be loaded when each job was
+ * last seen. A source with no adapter, or an empty catalog, produces a run whose
+ * error_summary explains why; that is shown verbatim rather than reported as
+ * "0 new jobs".
+ */
+export function RefreshMatchesPanel() {
+  const queryClient = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const run = await runsApi.run()
+      // Re-score after fetching so the list reflects the current profile.
+      const rescored = await matchesApi.rescore()
+      return { run: run.run, rescored: rescored.rescored }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['runs'] })
+    },
+  })
+
+  const run = mutation.data?.run
+  const rescored = mutation.data?.rescored ?? 0
+  const created = run?.stats?.jobs_created ?? 0
+  const duplicates = run?.stats?.jobs_duplicated ?? 0
+
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-3">
+      <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+        {mutation.isPending ? 'Refreshing…' : 'Refresh matches'}
+      </Button>
+      {mutation.isPending && (
+        <span role="status" className="text-sm text-slate-500">
+          Searching the enabled sources…
+        </span>
+      )}
+      {!mutation.isPending && run && (
+        <span role="status" className={`text-sm ${run.status === 'failed' ? 'text-red-600' : 'text-green-700'}`}>
+          {run.status === 'succeeded' &&
+            `Refreshed: ${created} new, ${duplicates} duplicates · re-scored ${rescored}`}
+          {run.status === 'partial' &&
+            `Partly refreshed: ${created} new — ${run.error_summary ?? 'some sources failed'}`}
+          {run.status === 'failed' && (run.error_summary || 'Refresh failed')}
+        </span>
+      )}
+      {!mutation.isPending && <ErrorBanner error={mutation.error} />}
+    </div>
+  )
+}
+
 export function JobDiscoveryPage() {
   const [params, setParams] = useSearchParams()
   const filters = useMemo(() => parseFilters(params), [params])
@@ -215,7 +271,10 @@ export function JobDiscoveryPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Job Discovery</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold">Job Discovery</h1>
+        <RefreshMatchesPanel />
+      </div>
       <JobsFilterForm filters={filters} onChange={onFilterChange} />
 
       {query.isLoading ? (
@@ -223,7 +282,10 @@ export function JobDiscoveryPage() {
       ) : query.isError ? (
         <ErrorState message={errorMessage(query.error)} onRetry={() => query.refetch()} />
       ) : !query.data || query.data.jobs.length === 0 ? (
-        <EmptyState title="No jobs match these filters" description="Try widening your search criteria." />
+        <EmptyState
+          title="No jobs match these filters"
+          description="Use Refresh matches to search your enabled sources, or widen the filters below."
+        />
       ) : (
         <>
           <div className="rounded-lg border border-slate-200 bg-white">

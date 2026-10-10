@@ -127,6 +127,16 @@ func ExtractPDFText(data []byte) (string, error) {
 		}
 		return out, ErrNoTextExtracted
 	}
+
+	// A document can decode into substituted characters rather than fail: see
+	// pdftext.go. When the text does not read as language, re-decode it run by
+	// run using each font's own /ToUnicode table. Text that already reads
+	// correctly is returned untouched.
+	if !looksLikeProse(out) {
+		if repaired, ok := extractPDFTextWithFontCMaps(data); ok && proseRatio(repaired) > proseRatio(out)+0.15 {
+			return repaired, nil
+		}
+	}
 	return out, nil
 }
 

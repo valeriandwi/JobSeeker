@@ -195,10 +195,27 @@ func (s *Server) handlePutProfile(w http.ResponseWriter, r *http.Request) {
 		s.fail(w, r, err)
 		return
 	}
+
+	// The profile drives every score, so confirming a change (typically the
+	// fields just reviewed from an uploaded CV) must not leave the stored
+	// matches describing the previous profile version. Best effort: a rescore
+	// failure must never lose the save itself.
+	rescored := 0
+	if s.deps.Runner != nil {
+		n, rerr := s.deps.Runner.Rescore(r.Context(), user.ID)
+		if rerr != nil {
+			s.deps.Logger.Warn("rescoring after profile save failed",
+				"user_id", user.ID.String(), "error", rerr.Error())
+		} else {
+			rescored = n
+		}
+	}
+
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{
 		"profile":              saved,
 		"confirmed":            true,
 		"confirmed_field_keys": confirmedFieldKeys(saved),
+		"matches_rescored":     rescored,
 	})
 }
 
@@ -512,7 +529,7 @@ func (s *Server) handlePutPreferences(w http.ResponseWriter, r *http.Request) {
 func cleanLocations(in []matching.LocationPref) []matching.LocationPref {
 	out := make([]matching.LocationPref, 0, len(in))
 	for _, l := range in {
-		l.Country = strings.ToUpper(strings.TrimSpace(l.Country))
+		l.Country = strings.TrimSpace(l.Country)
 		l.City = strings.TrimSpace(l.City)
 		l.Region = strings.TrimSpace(l.Region)
 		if l.Country == "" && l.City == "" && l.Region == "" {
@@ -646,6 +663,20 @@ func (s *Server) handlePatchSource(w http.ResponseWriter, r *http.Request) {
 	s.fail(w, r, jobs.ErrNotFound)
 }
 
+// handleRescoreJobs recomputes every stored match for the caller against the
+// current confirmed profile — the "my CV changed, re-score what I already have"
+// action. A run only scores the jobs it fetched, so matches computed against an
+// earlier profile version otherwise stay stale indefinitely.
+func (s *Server) handleRescoreJobs(w http.ResponseWriter, r *http.Request) {
+	user := s.user(r)
+	scored, err := s.deps.Runner.Rescore(r.Context(), user.ID)
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"rescored": scored})
+}
+
 func (s *Server) knownSourceIDs(r *http.Request) (map[string]bool, error) {
 	rows, err := s.deps.Search.ListAllSourceIDs(r.Context())
 	if err != nil {
@@ -666,6 +697,19 @@ func (s *Server) handleListWatchlist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"watchlist": orEmpty(entries)})
+}
+
+// supportsWatchlist reports whether a source accepts a per-company watchlist.
+//
+// Derived from the adapter's own capabilities rather than a hardcoded list: a
+// new ATS adapter becomes watchlist-capable by declaring RequiresWatchlist in
+// its Caps(), with no change here.
+func (s *Server) supportsWatchlist(sourceID string) bool {
+	if s.deps.Registry == nil {
+		return false
+	}
+	adapter, ok := s.deps.Registry.Get(sourceID)
+	return ok && adapter.Caps().RequiresWatchlist
 }
 
 var boardSlugAllowed = func(slug string) bool {
@@ -699,10 +743,23 @@ func (s *Server) handleAddWatchlist(w http.ResponseWriter, r *http.Request) {
 			httpx.FieldError{Field: "board_slug", Message: "invalid characters"}))
 		return
 	}
-	if !inSet(sourceID, "greenhouse", "lever", "ashby") {
+	// The catalog row must exist before a watchlist can reference it: an adapter
+	// can be compiled in while its master row is absent (e.g. after a source-set
+	// decision), and inserting against a missing row is a foreign-key violation,
+	// not a 500 the caller can act on.
+	known, err := s.knownSourceIDs(r)
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	if !known[sourceID] {
+		s.fail(w, r, jobs.ErrNotFound)
+		return
+	}
+	if !s.supportsWatchlist(sourceID) {
 		httpx.WriteError(w, r, s.deps.Logger, httpx.NewValidationError(
-			"watchlists are only supported for the ATS sources greenhouse, lever and ashby",
-			httpx.FieldError{Field: "id", Message: "not an ATS source"}))
+			"watchlists are only supported for company-board (ATS) sources",
+			httpx.FieldError{Field: "id", Message: "source does not accept a watchlist"}))
 		return
 	}
 	entry, err := s.deps.Search.AddWatchlistEntry(r.Context(), user.ID, sourceID, body.BoardSlug, strings.TrimSpace(body.Company))

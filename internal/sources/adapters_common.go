@@ -52,6 +52,7 @@ func parseTimeAny(s string) *time.Time {
 		time.RFC3339Nano,
 		time.RFC3339,
 		"2006-01-02T15:04:05",
+		"2006-01-02 15:04:05 MST",
 		"2006-01-02 15:04:05",
 		"2006-01-02",
 	}

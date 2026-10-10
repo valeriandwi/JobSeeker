@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { JobDiscoveryPage, JobRow } from './JobDiscoveryPage'
 import { renderWithProviders } from '../test/utils'
 import type { Job } from '../api/types'
@@ -153,5 +153,112 @@ describe('JobRow unknown handling', () => {
     )
     expect(screen.getByText(/Attribution required/i)).toBeInTheDocument()
     expect(screen.getByText('Open original ↗')).toBeInTheDocument()
+  })
+})
+
+describe('Refresh matches', () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  /** fetch stub that answers the jobs list, the run and the rescore endpoints. */
+  function stubApi(runBody: unknown, runStatus = 200, rescored = 17) {
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      const target = String(url)
+      if (target.includes('/api/v1/searches/run')) {
+        return Promise.resolve(jsonResponse(runBody, runStatus))
+      }
+      if (target.includes('/api/v1/jobs/rescore')) {
+        return Promise.resolve(jsonResponse({ rescored }))
+      }
+      return Promise.resolve(jsonResponse({ jobs: [], total: 0, page: 1, per_page: 20 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    return fetchMock
+  }
+
+  it('POSTs a manual run, re-scores the discovered jobs and reports both', async () => {
+    const fetchMock = stubApi({
+      run: {
+        id: 'run-1',
+        trigger: 'manual',
+        status: 'succeeded',
+        started_at: '2026-10-10T00:00:00Z',
+        finished_at: '2026-10-10T00:00:07Z',
+        error_summary: null,
+        stats: { jobs_created: 12, jobs_duplicated: 3 },
+      },
+    })
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+
+    fireEvent.click(await screen.findByRole('button', { name: /Refresh matches/i }))
+
+    // A run only scores what it fetches, so the refresh must also re-score the
+    // jobs already stored against the current (CV-derived) profile.
+    expect(await screen.findByText(/Refreshed: 12 new, 3 duplicates · re-scored 17/i)).toBeInTheDocument()
+    const runCall = fetchMock.mock.calls.find(([url]) => String(url).includes('/api/v1/searches/run'))
+    expect(runCall).toBeDefined()
+    expect((runCall?.[1] as RequestInit)?.method).toBe('POST')
+    const rescoreCall = fetchMock.mock.calls.find(([url]) => String(url).includes('/api/v1/jobs/rescore'))
+    expect(rescoreCall).toBeDefined()
+    expect((rescoreCall?.[1] as RequestInit)?.method).toBe('POST')
+  })
+
+  it('surfaces the run failure reason instead of claiming a refresh', async () => {
+    // The state after the catalog is emptied: nothing to search.
+    stubApi({
+      run: {
+        id: 'run-2',
+        trigger: 'manual',
+        status: 'failed',
+        started_at: '2026-10-10T00:00:00Z',
+        finished_at: '2026-10-10T00:00:01Z',
+        error_summary: 'no sources are configured: the source catalog is empty',
+        stats: { jobs_created: 0 },
+      },
+    })
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+    fireEvent.click(await screen.findByRole('button', { name: /Refresh matches/i }))
+
+    expect(
+      await screen.findByText(/no sources are configured: the source catalog is empty/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Refreshed:/i)).not.toBeInTheDocument()
+  })
+
+  it('shows a partly-refreshed run as partial', async () => {
+    stubApi({
+      run: {
+        id: 'run-3',
+        trigger: 'manual',
+        status: 'partial',
+        started_at: '2026-10-10T00:00:00Z',
+        finished_at: '2026-10-10T00:00:09Z',
+        error_summary: 'personio: timeout',
+        stats: { jobs_created: 5 },
+      },
+    })
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+    fireEvent.click(await screen.findByRole('button', { name: /Refresh matches/i }))
+
+    expect(await screen.findByText(/Partly refreshed: 5 new — personio: timeout/i)).toBeInTheDocument()
+  })
+
+  it('reports a transport failure through the error banner', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('/api/v1/searches/run')) {
+        return Promise.reject(new Error('network down'))
+      }
+      return Promise.resolve(jsonResponse({ jobs: [], total: 0, page: 1, per_page: 20 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+    fireEvent.click(await screen.findByRole('button', { name: /Refresh matches/i }))
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
   })
 })

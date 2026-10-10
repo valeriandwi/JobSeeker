@@ -15,6 +15,7 @@ import (
 	"github.com/valeriandwipurnomo/jobseeker/internal/platform/config"
 	"github.com/valeriandwipurnomo/jobseeker/internal/platform/httpx"
 	"github.com/valeriandwipurnomo/jobseeker/internal/search"
+	"github.com/valeriandwipurnomo/jobseeker/internal/sources"
 	"github.com/valeriandwipurnomo/jobseeker/internal/storage"
 	"github.com/valeriandwipurnomo/jobseeker/internal/tracker"
 )
@@ -30,6 +31,10 @@ type Deps struct {
 	Search    *search.Repository
 	Runner    *search.Runner
 	Tracker   *tracker.Repository
+	// Registry is the source adapter set. Handlers consult it for capability
+	// questions (e.g. which sources accept a company watchlist) so adding an
+	// adapter never requires editing the HTTP layer.
+	Registry *sources.Registry
 }
 
 // Server is the HTTP handler set.
@@ -74,6 +79,7 @@ func (s *Server) Routes() http.Handler {
 	protected.HandleFunc("PUT /api/v1/schedule", s.handlePutSchedule)
 
 	protected.HandleFunc("GET /api/v1/sources", s.handleListSources)
+	protected.HandleFunc("POST /api/v1/jobs/rescore", s.handleRescoreJobs)
 	protected.HandleFunc("PATCH /api/v1/sources/{id}", s.handlePatchSource)
 	protected.HandleFunc("GET /api/v1/sources/{id}/watchlist", s.handleListWatchlist)
 	protected.HandleFunc("POST /api/v1/sources/{id}/watchlist", s.handleAddWatchlist)

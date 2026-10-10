@@ -95,6 +95,8 @@ export interface Profile {
   certifications: CertificationEntry[]
   languages: string[]
   projects: ProjectEntry[]
+  /** Server-owned, but returned so the profile keeps its link to the CV. */
+  source_resume_id?: string | null
   version: number
   confirmed_field_keys: string[]
 }

@@ -83,6 +83,7 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 		Search:    searchRepo,
 		Runner:    runner,
 		Tracker:   trackerRepo,
+		Registry:  registry,
 	})
 
 	return &App{
@@ -109,14 +110,18 @@ func buildRegistry(cfg config.Config) *sources.Registry {
 	// Conservative per-source budgets, well inside each provider's documented
 	// tolerance. The fetcher also honours Retry-After on 429/5xx.
 	for id, perMinute := range map[string]int{
-		"arbeitnow":  30,
-		"remotive":   20,
-		"remoteok":   20,
-		"jobicy":     30,
-		"himalayas":  30,
-		"greenhouse": 60,
-		"lever":      60,
-		"ashby":      60,
+		"arbeitnow":       30,
+		"remotive":        20,
+		"remoteok":        20,
+		"jobicy":          30,
+		"himalayas":       30,
+		"greenhouse":      60,
+		"lever":           60,
+		"ashby":           60,
+		"smartrecruiters": 60,
+		"recruitee":       60,
+		"personio":        60,
+		"kalibrr":         30,
 	} {
 		fetcher.SetRateLimit(id, perMinute)
 	}
@@ -131,6 +136,10 @@ func buildRegistry(cfg config.Config) *sources.Registry {
 		sources.NewGreenhouse(opt),
 		sources.NewLever(opt),
 		sources.NewAshby(opt),
+		sources.NewSmartRecruiters(opt),
+		sources.NewRecruitee(opt),
+		sources.NewPersonio(opt),
+		sources.NewKalibrr(opt),
 	)
 }
 

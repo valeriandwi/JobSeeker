@@ -192,7 +192,13 @@ func (r *Runner) Run(ctx context.Context, userID uuid.UUID, trigger string, sche
 	switch {
 	case attempted == 0:
 		status = RunFailed
-		errs = append(errs, "no sources were runnable: enable at least one source with a configured adapter")
+		// Distinguish "nothing is switched on" from "there is nothing to switch
+		// on": with an empty catalog the first message is unactionable.
+		if settings, err := r.repo.ListSourceSettings(ctx, userID); err == nil && len(settings) == 0 {
+			errs = append(errs, "no sources are configured: the source catalog is empty")
+		} else {
+			errs = append(errs, "no sources were runnable: enable at least one source with a configured adapter")
+		}
 	case len(errs) > 0:
 		status = RunPartial
 	}
@@ -389,7 +395,57 @@ func joinErrText(existing, add string) string {
 	return existing + "; " + add
 }
 
-// RunNow starts a manual run for a user.
+// Rescore recomputes the stored matches for every job this user can already
+// see, against the CURRENT confirmed profile.
+//
+// A run only scores the jobs it touched, so without this a profile change (a CV
+// uploaded and confirmed, a title corrected) leaves older matches scored against
+// the previous profile version — which is exactly what "the score must come from
+// my CV" needs to avoid. Returns how many matches were written.
+func (r *Runner) Rescore(ctx context.Context, userID uuid.UUID) (int, error) {
+	prefs, _, err := r.profiles.GetPreferences(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	profile, _, err := r.profiles.GetProfile(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	profileMatching := profile.ToMatching()
+	prefsMatching := prefs.ToMatching()
+
+	const perPage = 100
+	scored := 0
+	for page := 1; page <= maxRescorePages; page++ {
+		if ctx.Err() != nil {
+			break
+		}
+		records, total, err := r.jobs.ListJobs(ctx, userID, jobs.JobFilter{Page: page, PerPage: perPage})
+		if err != nil {
+			return scored, err
+		}
+		if len(records) == 0 {
+			break
+		}
+		for _, record := range records {
+			result := matching.Score(jobForScoring(record), profileMatching, prefsMatching)
+			if err := r.jobs.UpsertMatch(ctx, record.ID, userID, profileMatching.Version, result); err != nil {
+				r.logger.Warn("rescoring job failed", "job_id", record.ID.String(), "error", err.Error())
+				continue
+			}
+			scored++
+		}
+		if page*perPage >= total {
+			break
+		}
+	}
+	return scored, nil
+}
+
+// maxRescorePages bounds one request's work: 100 pages x 100 jobs.
+const maxRescorePages = 100
+
+// RunNow runs a manual search for the user.
 func (r *Runner) RunNow(ctx context.Context, userID uuid.UUID, idempotencyKey string) (Run, error) {
 	return r.Run(ctx, userID, "manual", nil, idempotencyKey)
 }
