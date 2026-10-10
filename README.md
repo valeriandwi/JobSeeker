@@ -158,6 +158,49 @@ as a normal link), Remotive requires attribution and forbids redistribution,
 Arbeitnow asks for a link back, and Adzuna requires a labelled, linked logo. See
 [`docs/sources.md`](docs/sources.md).
 
+## Deploy (Docker Compose)
+
+The whole stack — Postgres, migrations, API, scheduler, and the SPA served by
+Caddy — is in `deploy/docker-compose.yml`:
+
+```bash
+cp .env.example .env      # then review it
+docker compose --env-file .env -f deploy/docker-compose.yml up -d --build
+curl -I http://localhost/healthz    # /readyz is the DB-aware check
+```
+
+- **`--env-file .env` is required.** Compose reads `.env` from the *project
+  directory*, which is this compose file's directory (`deploy/`) when `-f` points
+  there — not your shell's cwd. Without the flag the stack fails with
+  *"required variable POSTGRES_PASSWORD is missing a value"*.
+- **`POSTGRES_PASSWORD` is required** by the stack and is interpolated into the
+  containers' `DATABASE_URL`. Use a long random value containing no `@ : / #`
+  (it sits inside a URL) — `openssl rand -hex 24`.
+- **`migrate` runs to completion before `api` and `scheduler` start**, so the API
+  never serves a half-migrated schema. The API never migrates on its own.
+- **`scheduler` is a separate service and must be running**, or no schedule ever
+  fires — the API only serves requests.
+- The SPA is served from the same origin as `/api`, which is what keeps the
+  session cookie first-party. Never bake a different host into
+  `VITE_API_BASE_URL`.
+- **`POSTGRES_HOST_PORT`** (default 5433) is where the container's Postgres is
+  published for host access. The isolated dev cluster from `make dev-db-init`
+  also uses 5433 — set `POSTGRES_HOST_PORT=5434` to run both, or
+  `make dev-db-down` first. The app never uses this port: containers talk over
+  the compose network.
+- Uploaded CVs live in the `cvs` volume (`DATA_DIR`). Back that up along with the
+  database: a volume is not a backup.
+
+### HTTPS on a real domain
+
+1. Point the domain's A record at the server.
+2. In `deploy/Caddyfile`, replace `:80 {` with `yourdomain.com {`.
+3. In `deploy/docker-compose.yml`, publish `"443:443"` alongside `"80:80"`.
+4. In `.env`: `COOKIE_SECURE=true`, `CORS_ALLOWED_ORIGINS=https://yourdomain.com`,
+   and `VITE_API_BASE_URL=https://yourdomain.com` (baked in at build time).
+
+Caddy obtains and renews the certificate automatically.
+
 ## Status
 
 Implemented and verified: everything above.
@@ -174,6 +217,10 @@ Implemented and verified: everything above.
 | Few results, `high_match_count: 0` | The default 70/100 threshold is strict, and job titles must resemble your configured target titles. Adjust `job_titles` and the minimum score in Search Config. |
 | ATS sources report `skipped` | `greenhouse`, `lever` and `ashby` need company board slugs in the watchlist. |
 | `go: downloading go1.26.0` | A module was fetched without the toolchain pin: `export GOTOOLCHAIN=local`. |
+| `required variable POSTGRES_PASSWORD is missing a value` | Compose reads `.env` from the *project directory* (`deploy/` when you pass `-f deploy/docker-compose.yml`). Run it with `--env-file .env`, and make sure `POSTGRES_PASSWORD` is set — it is required, not optional. |
+| A scheduled run reports `no adapter available in this build` | The **scheduler** process is stale. `go run` and containers compile once at startup, so a source added after it started is unknown to it. Restart it (`make run-scheduler`, or `docker compose … restart scheduler`). The same applies to the API process. |
+| Cron never fires | Nothing is running `cmd/scheduler`. The API does not run schedules — see "Deploy (Docker Compose)". |
+| `port is already allocated` / `address already in use` on 5433 | The isolated dev cluster owns it. Set `POSTGRES_HOST_PORT=5434` in `.env`, or `make dev-db-down`. |
 
 Deliberately **not** implemented: automatic applications, employer contact, and
 scraping of any source whose terms prohibit it. Email digests (Phase 2 of the

@@ -6,12 +6,19 @@
 # to remove it.
 #
 # Usage (from the repository root):
-#   cp .env.example .env          # then review it
-#   docker compose -f deploy/docker-compose.yml up -d --build
+#   cp .env.example .env          # then review it — POSTGRES_PASSWORD is required
+#   docker compose --env-file .env -f deploy/docker-compose.yml up -d --build
+#
+# The --env-file flag matters: Compose reads `.env` from the PROJECT directory,
+# which is this file's directory (deploy/) when -f points here — not your shell's
+# cwd. Without the flag the stack fails with "required variable
+# POSTGRES_PASSWORD is missing a value", because deploy/.env does not exist.
 #
 # Production notes:
 #   - COOKIE_SECURE must be true behind TLS (the compose default is for local use).
 #   - Put real secrets in .env or a secret manager; never commit them.
+#   - For HTTPS on a real domain: put the domain in deploy/Caddyfile in place of
+#     ":80", and publish 443 in the web service below.
 
 services:
   postgres:
@@ -24,7 +31,9 @@ services:
       # Deterministic collation keeps index behaviour identical across hosts.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
-      - "127.0.0.1:5433:5432"
+      # Host port is configurable because the isolated dev cluster also uses
+      # 5433 (`make dev-db-init`): set POSTGRES_HOST_PORT=5434 to run both.
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
