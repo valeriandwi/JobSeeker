@@ -40,6 +40,9 @@ func testDB(t *testing.T) (*storage.DB, uuid.UUID) {
 	if _, err := db.Pool.Exec(ctx, `truncate table users, jobs, job_source_listings, job_matches, search_runs cascade`); err != nil {
 		t.Fatalf("resetting tables: %v", err)
 	}
+	if err := ensureJobSources(ctx, db); err != nil {
+		t.Fatalf("seeding source catalog: %v", err)
+	}
 
 	var userID uuid.UUID
 	if err := db.Pool.QueryRow(ctx, `
@@ -62,6 +65,36 @@ func applyMigrations(url string) error {
 		return err
 	}
 	return goose.Up(db, ".")
+}
+
+// ensureJobSources seeds the catalog rows the fixtures reference.
+//
+// The catalog is DATA, not code: migrations retire sources (0005 deleted every
+// row, 0007/0008 re-added only kalibrr and jobstreet). A test that assumes
+// `arbeitnow` simply exists therefore fails for reasons that have nothing to do
+// with what it is testing, so each fixture seeds what it needs.
+func ensureJobSources(ctx context.Context, db *storage.DB) error {
+	ids := []string{
+		"arbeitnow", "remotive", "remoteok", "jobicy", "himalayas",
+		"greenhouse", "lever", "ashby", "smartrecruiters", "recruitee", "personio",
+		"kalibrr", "jobstreet",
+	}
+	for _, id := range ids {
+		// Attribution text is part of the contract (the product stores and shows
+		// it per source), so the fixture carries it too — a seed with an empty
+		// attribution column would fail the very assertion that guards it.
+		if _, err := db.Pool.Exec(ctx, `
+			insert into job_sources (id, display_name, kind, attribution_text, attribution_url)
+			values ($1, $1, 'feed', 'Listings from ' || $1, 'https://example.test/' || $1)
+			on conflict (id) do update set
+			    display_name = excluded.display_name,
+			    kind = excluded.kind,
+			    attribution_text = excluded.attribution_text,
+			    attribution_url = excluded.attribution_url`, id); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func sampleListing(sourceID, sourceJobID, url, title, company, city, country string) sources.RawListing {

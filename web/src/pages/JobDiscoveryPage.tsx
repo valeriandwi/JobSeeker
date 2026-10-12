@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { jobsApi, matchesApi, runsApi } from '../api'
+import { jobsApi, matchesApi, runsApi, applicationsApi } from '../api'
 import type { Job, JobFilters } from '../api/types'
 import { errorMessage } from '../api/client'
+import { JobTrackingButtons } from '../components/JobTrackingButtons'
 import { Table } from '../components/ui/Table'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
@@ -33,7 +34,18 @@ import {
 const SORT_LABELS = new Set(SORT_OPTIONS.map((o) => o.value))
 
 /** All Unknown-marker-aware attributes on a job row. */
-export function JobRow({ job }: { job: Job }) {
+export function JobRow({
+  job,
+  bookmarked = false,
+  applicationStatus = null,
+  tracking = true,
+}: {
+  job: Job
+  bookmarked?: boolean
+  applicationStatus?: string | null
+  /** Render the tracking column. Off in tests that only exercise the row cells. */
+  tracking?: boolean
+}) {
   const salary = formatSalary(job)
   const primarySource = job.sources[0]
   // Derived from the listing text and labelled as such in the cell: the sources
@@ -41,6 +53,11 @@ export function JobRow({ job }: { job: Job }) {
   const detectedTech = detectTechStack([job.title, job.description_summary].filter(Boolean).join(' '))
   return (
     <tr>
+      {tracking && (
+        <td className="px-3 py-3 align-top">
+          <TrackCell job={job} bookmarked={bookmarked} applicationStatus={applicationStatus} />
+        </td>
+      )}
       <td className="px-3 py-3 align-top">
         <ScoreBadge score={job.match_score} />
       </td>
@@ -184,6 +201,64 @@ export function JobRow({ job }: { job: Job }) {
   )
 }
 
+/**
+ * Save + application tracking for one row.
+ *
+ * Bookmarking and "I applied" are separate facts and separate endpoints: the
+ * bookmark lives in `saved_jobs`, the application in `applications`. Both
+ * mutations invalidate every view that shows them, so the row, the Saved Jobs
+ * page and the dashboard counters stay in step.
+ */
+function TrackCell({
+  job,
+  bookmarked,
+  applicationStatus,
+}: {
+  job: Job
+  bookmarked: boolean
+  applicationStatus: string | null
+}) {
+  const queryClient = useQueryClient()
+
+  const refresh = () => {
+    for (const key of ['jobs', 'saved-jobs', 'applications', 'dashboard']) {
+      queryClient.invalidateQueries({ queryKey: [key] })
+    }
+  }
+
+  const save = useMutation({
+    mutationFn: () => (bookmarked ? jobsApi.unsave(job.id) : jobsApi.save(job.id)),
+    onSuccess: refresh,
+  })
+
+  const applied = useMutation({
+    mutationFn: () =>
+      applicationsApi.update(job.id, {
+        status: applicationStatus === 'applied' ? 'saved' : 'applied',
+        // Stamp the send time when marking, clear it when taking it back.
+        applied_at: applicationStatus === 'applied' ? null : new Date().toISOString(),
+      }),
+    onSuccess: refresh,
+  })
+
+  return (
+    <div className="space-y-1">
+      <JobTrackingButtons
+        bookmarked={bookmarked}
+        applicationStatus={applicationStatus}
+        pending={save.isPending || applied.isPending}
+        onToggleSave={() => save.mutate()}
+        onToggleApplied={() => applied.mutate()}
+      />
+      {(save.isError || applied.isError) && (
+        <p role="alert" className="text-xs text-red-600">
+          {errorMessage(save.error ?? applied.error)}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function JobsFilterForm({
   filters,
   onChange,
@@ -324,6 +399,23 @@ export function JobDiscoveryPage() {
   const [params, setParams] = useSearchParams()
   const filters = useMemo(() => parseFilters(params), [params])
 
+  // Tracking state for the rows. Two independent facts: which jobs are
+  // bookmarked (`saved_jobs`) and which have an application record
+  // (`applications`). Fetched once per page and shared through these lookups.
+  const savedJobs = useQuery({ queryKey: ['saved-jobs'], queryFn: jobsApi.saved })
+  const applications = useQuery({ queryKey: ['applications'], queryFn: applicationsApi.list })
+
+  const bookmarkedIds = useMemo(
+    // `saved_jobs` is the key the API actually sends (flat rows); reading `jobs`
+    // here left this set empty, so the Save icon never showed as saved.
+    () => new Set((savedJobs.data?.saved_jobs ?? []).map((s) => s.job_id)),
+    [savedJobs.data],
+  )
+  const statusByJob = useMemo(
+    () => new Map((applications.data?.applications ?? []).map((a) => [a.job_id, a.status])),
+    [applications.data],
+  )
+
   const query = useQuery({
     queryKey: ['jobs', filters],
     queryFn: () => jobsApi.list(filters),
@@ -374,6 +466,7 @@ export function JobDiscoveryPage() {
               caption="Job search results"
               minWidthClassName="min-w-[1120px]"
               head={[
+                'Track',
                 'Score',
                 'Title / Company',
                 'Description',
@@ -388,7 +481,12 @@ export function JobDiscoveryPage() {
               ]}
             >
               {query.data.jobs.map((job) => (
-                <JobRow key={job.id} job={job} />
+                <JobRow
+                  key={job.id}
+                  job={job}
+                  bookmarked={bookmarkedIds.has(job.id)}
+                  applicationStatus={statusByJob.get(job.id) ?? null}
+                />
               ))}
             </Table>
           </div>

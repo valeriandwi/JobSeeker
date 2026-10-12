@@ -259,11 +259,37 @@ export type ApplicationStatus =
 
 export interface Application {
   job_id: string
+  /**
+   * Denormalised job details as returned by GET /applications. They are what
+   * makes an application renderable on its own: a job can have an application
+   * record without being bookmarked, so the tracker page cannot rely on the
+   * saved-jobs list for title/company.
+   */
+  title: string
+  company: string
+  url: string
   status: ApplicationStatus
   applied_at: string | null
   notes: string | null
   follow_up_at: string | null
-  job?: Job
+  updated_at: string
+}
+
+/**
+ * A bookmark row from GET /saved-jobs.
+ *
+ * The endpoint returns a FLAT, denormalised row under the key `saved_jobs` —
+ * not a `Job`, and not under `jobs`. It carries no location and no source list,
+ * so a bookmark cannot be rendered like a Job Discovery row.
+ */
+export interface SavedJob {
+  job_id: string
+  title: string
+  company: string
+  url: string
+  source: string
+  match_score: number | null
+  saved_at: string
 }
 
 export interface DashboardSummary {

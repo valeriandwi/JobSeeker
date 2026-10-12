@@ -166,7 +166,13 @@ func (r *Repository) UpsertApplication(ctx context.Context, userID, jobID uuid.U
 			values ($1, $2, $3, $4, $5, $6)
 			on conflict (user_id, job_id) do update set
 			    status = excluded.status,
-			    applied_at = coalesce(excluded.applied_at, applications.applied_at),
+			    -- An omitted applied_at never clobbers a known date, EXCEPT when
+			    -- the new status is a pre-send one: "saved" means no application
+			    -- was sent, so a leftover timestamp would contradict the status.
+			    applied_at = case
+			        when excluded.status = 'saved' then null
+			        else coalesce(excluded.applied_at, applications.applied_at)
+			    end,
 			    follow_up_at = excluded.follow_up_at,
 			    notes = excluded.notes,
 			    updated_at = now()

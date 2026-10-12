@@ -106,7 +106,10 @@ describe('JobDiscoveryPage', () => {
     renderWithProviders(<JobDiscoveryPage />, { route: '/jobs?q=rust&arrangement=remote&min_score=60' })
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled())
-    const calledUrl = String(fetchMock.mock.calls[0]?.[0])
+    // The tracking lookups (/saved-jobs, /applications) now load alongside the
+    // list, so pick the list call rather than assuming it is first.
+    const listCall = fetchMock.mock.calls.find(([url]) => String(url).includes('/api/v1/jobs?'))
+    const calledUrl = String(listCall?.[0])
     expect(calledUrl).toContain('q=rust')
     expect(calledUrl).toContain('arrangement=remote')
     expect(calledUrl).toContain('min_score=60')
@@ -137,7 +140,8 @@ describe('JobDiscoveryPage', () => {
     // No sort param is sent, so the URL stays clean; the server applies the same
     // default. What must never happen is the old score-first default creeping back.
     await waitFor(() => expect(fetchMock).toHaveBeenCalled())
-    expect(String(fetchMock.mock.calls[0]?.[0])).not.toContain('sort=score')
+    const listCall = fetchMock.mock.calls.find(([url]) => String(url).includes('/api/v1/jobs?'))
+    expect(String(listCall?.[0])).not.toContain('sort=score')
   })
 
   it('keeps an explicit sort from the URL', async () => {
@@ -184,7 +188,9 @@ describe('JobRow unknown handling', () => {
     const { container } = renderWithProviders(
       <table>
         <tbody>
-          <JobRow job={job} />
+          {/* tracking={false}: the tracking cell is icon-only by design, so it
+              deliberately has no text — these assertions are about data cells. */}
+          <JobRow job={job} tracking={false} />
         </tbody>
       </table>,
     )
@@ -219,7 +225,7 @@ describe('JobRow unknown handling', () => {
     const { container } = renderWithProviders(
       <table>
         <tbody>
-          <JobRow job={makeJob({ description_summary: '' })} />
+          <JobRow job={makeJob({ description_summary: '' })} tracking={false} />
         </tbody>
       </table>,
     )
@@ -258,7 +264,7 @@ describe('JobRow unknown handling', () => {
     const { container } = renderWithProviders(
       <table>
         <tbody>
-          <JobRow job={makeJob({ title: 'Warehouse Operative', description_summary: 'Pick and pack orders.' })} />
+          <JobRow job={makeJob({ title: 'Warehouse Operative', description_summary: 'Pick and pack orders.' })} tracking={false} />
         </tbody>
       </table>,
     )
@@ -450,5 +456,112 @@ describe('Refresh matches', () => {
     fireEvent.click(await screen.findByRole('button', { name: /Refresh matches/i }))
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()
+  })
+})
+
+describe('tracking from the job list', () => {
+  it('saves a job and records that an application was sent, from the row', async () => {
+    const calls: string[] = []
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      const target = String(url)
+      calls.push(`${init?.method ?? 'GET'} ${target}`)
+      if (target.includes('/saved-jobs')) return Promise.resolve(jsonResponse({ saved_jobs: [] }))
+      if (target.includes('/applications')) return Promise.resolve(jsonResponse({ applications: [] }))
+      if (target.includes('/api/v1/jobs')) {
+        return Promise.resolve(jsonResponse({ jobs: [makeJob()], total: 1, page: 1, per_page: 20 }))
+      }
+      return Promise.resolve(jsonResponse({}))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Save job' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.startsWith('POST ') && c.includes('/jobs/job-1/save'))).toBe(true),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mark application as sent' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.startsWith('PUT ') && c.includes('/applications/job-1'))).toBe(true),
+    )
+  })
+
+  it('reflects an already-tracked job and offers to take the application back', async () => {
+    const calls: string[] = []
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      const target = String(url)
+      calls.push(`${init?.method ?? 'GET'} ${target}`)
+      // Real wire shape: `saved_jobs`, flat rows. Reading `jobs` here is what
+      // kept the bookmark icon unpressed for saved jobs.
+      if (target.includes('/saved-jobs')) {
+        return Promise.resolve(
+          jsonResponse({
+            saved_jobs: [
+              {
+                job_id: 'job-1',
+                title: 'Senior Backend Engineer',
+                company: 'Acme Corp',
+                url: 'https://kalibrr.test/jobs/1',
+                source: 'kalibrr',
+                match_score: 88,
+                saved_at: '2026-10-10T00:00:00Z',
+              },
+            ],
+          }),
+        )
+      }
+      if (target.includes('/applications')) {
+        return Promise.resolve(
+          jsonResponse({
+            applications: [
+              {
+                job_id: 'job-1',
+                title: 'Senior Backend Engineer',
+                company: 'Acme Corp',
+                url: 'https://kalibrr.test/jobs/1',
+                status: 'applied',
+                applied_at: '2026-10-10T00:00:00Z',
+              },
+            ],
+          }),
+        )
+      }
+      if (target.includes('/api/v1/jobs')) {
+        return Promise.resolve(jsonResponse({ jobs: [makeJob()], total: 1, page: 1, per_page: 20 }))
+      }
+      return Promise.resolve(jsonResponse({}))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+
+    // Both facts are visible on the row without opening anything.
+    expect(await screen.findByRole('button', { name: /saved job/i })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByRole('button', { name: /application sent/i }))
+
+    // Un-marking goes back to "saved" and clears the timestamp.
+    await waitFor(() =>
+      expect(calls.some((c) => c.startsWith('PUT ') && c.includes('/applications/job-1'))).toBe(true),
+    )
+  })
+
+  it('puts the tracking icons in the first column', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      const target = String(url)
+      if (target.includes('/saved-jobs')) return Promise.resolve(jsonResponse({ saved_jobs: [] }))
+      if (target.includes('/applications')) return Promise.resolve(jsonResponse({ applications: [] }))
+      return Promise.resolve(jsonResponse({ jobs: [makeJob()], total: 1, page: 1, per_page: 20 }))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithProviders(<JobDiscoveryPage />, { route: '/jobs' })
+
+    const headers = (await screen.findAllByRole('columnheader')).map((h) => h.textContent)
+    expect(headers[0]).toBe('Track')
+
+    // And the controls really are in the row's first cell.
+    const firstCell = screen.getAllByRole('row')[1]?.querySelector('td')
+    expect(firstCell?.querySelector('button')).not.toBeNull()
   })
 })
